@@ -16,14 +16,16 @@
 4. Vercel will auto-detect it as a Node.js project
 
 ## Step 3: Configure Environment Variables
-In Vercel dashboard, go to your project settings and add these environment variables:
+In Vercel dashboard, go to your project settings → Environment Variables and add:
 
-```
-MONGODB_URI = mongodb+srv://emp_task_db:Colab123@cluster0.4ph63nw.mongodb.net/emptaskdb?retryWrites=true&w=majority
-JWT_SECRET = your_super_secret_jwt_key_change_this_in_production_12345
-NODE_ENV = production
-PORT = 5001
-```
+**Variable Name** | **Value**
+--- | ---
+`MONGODB_URI` | `mongodb+srv://emp_task_db:Colab123@cluster0.4ph63nw.mongodb.net/emptaskdb?retryWrites=true&w=majority`
+`JWT_SECRET` | `your_super_secret_jwt_key_change_this_in_production_12345`
+`NODE_ENV` | `production`
+`PORT` | `5001`
+
+**Important:** Make sure to set these as Environment Variables, NOT as Secrets in Vercel.
 
 ## Step 4: Deploy
 1. Click "Deploy" in Vercel

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { X, Plus, Edit2, Trash2, ExternalLink, FileText } from 'lucide-react';
 import axios from 'axios';
 import './ProjectDetails.css';
@@ -23,16 +23,16 @@ const ProjectDetails = ({ project, onClose, onRefresh, userRole }) => {
 
   useEffect(() => {
     fetchVendors();
-  }, [project._id]);
+  }, [project._id, fetchVendors]);
 
-  const fetchVendors = async () => {
+  const fetchVendors = useCallback(async () => {
     try {
       const res = await axios.get(`/api/project-vendors/project/${project._id}`);
       setVendors(res.data);
     } catch (err) {
       console.error('Failed to fetch vendors');
     }
-  };
+  }, [project._id]);
 
   const handleAddVendor = () => {
     setEditingVendor(null);

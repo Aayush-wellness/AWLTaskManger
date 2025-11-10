@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Plus, LogOut, Download, Filter, TrendingUp, CheckCircle, Clock, AlertCircle, Calendar, FolderKanban } from 'lucide-react';
+import { Plus, LogOut, Download, Filter, TrendingUp, CheckCircle, Clock, AlertCircle, Calendar } from 'lucide-react';
 import axios from 'axios';
 import ProjectDetails from '../components/ProjectDetails';
 import '../styles/Dashboard.css';
@@ -31,7 +31,7 @@ const EmployeeDashboard = () => {
 
   useEffect(() => {
     applyFilters();
-  }, [tasks, filters]);
+  }, [tasks, filters, applyFilters]);
 
   const fetchTasks = async () => {
     try {
@@ -51,7 +51,7 @@ const EmployeeDashboard = () => {
     }
   };
 
-  const applyFilters = () => {
+  const applyFilters = useCallback(() => {
     let filtered = [...tasks];
 
     // Status filter
@@ -75,7 +75,7 @@ const EmployeeDashboard = () => {
     }
 
     setFilteredTasks(filtered);
-  };
+  }, [tasks, filters]);
 
   const handleAddTask = async (e) => {
     e.preventDefault();
