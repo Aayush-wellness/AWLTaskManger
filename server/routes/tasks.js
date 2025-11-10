@@ -90,6 +90,27 @@ router.put('/:id', auth, async (req, res) => {
   }
 });
 
+// Delete task (employee can delete own tasks, admin can delete any)
+router.delete('/:id', auth, async (req, res) => {
+  try {
+    const task = await Task.findById(req.params.id);
+    
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    // Check authorization
+    if (req.user.role === 'employee' && task.employee.toString() !== req.user.userId) {
+      return res.status(403).json({ message: 'Not authorized to delete this task' });
+    }
+
+    await Task.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Task deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // Download Excel (employees can download their own, admins can download all)
 router.get('/export/excel', auth, async (req, res) => {
   try {

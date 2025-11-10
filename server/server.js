@@ -17,14 +17,83 @@ mongoose.connect(process.env.MONGODB_URI)
   .catch(err => console.error('MongoDB connection error:', err));
 
 // Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'OK',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV,
-    mongoUri: process.env.MONGODB_URI ? 'Set' : 'Not Set',
-    jwtSecret: process.env.JWT_SECRET ? 'Set' : 'Not Set'
-  });
+app.get('/api/health', async (req, res) => {
+  try {
+    // Test database connection
+    const User = require('./models/User');
+    const userCount = await User.countDocuments();
+    
+    res.json({
+      status: 'OK',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV,
+      mongoUri: process.env.MONGODB_URI ? 'Set' : 'Not Set',
+      jwtSecret: process.env.JWT_SECRET ? 'Set' : 'Not Set',
+      mongoConnection: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
+      userCount: userCount,
+      databaseTest: 'Success'
+    });
+  } catch (error) {
+    res.json({
+      status: 'ERROR',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV,
+      mongoUri: process.env.MONGODB_URI ? 'Set' : 'Not Set',
+      jwtSecret: process.env.JWT_SECRET ? 'Set' : 'Not Set',
+      mongoConnection: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
+      error: error.message,
+      databaseTest: 'Failed'
+    });
+  }
+});
+
+// Create admin user endpoint (for initial setup)
+app.post('/api/setup/admin', async (req, res) => {
+  try {
+    const User = require('./models/User');
+    const Department = require('./models/Department');
+    const bcrypt = require('bcryptjs');
+    
+    // Check if admin already exists
+    const existingAdmin = await User.findOne({ email: 'admin@example.com' });
+    if (existingAdmin) {
+      return res.json({ message: 'Admin user already exists', email: 'admin@example.com' });
+    }
+
+    // Create default department if it doesn't exist
+    let department = await Department.findOne({ name: 'Administration' });
+    if (!department) {
+      department = new Department({
+        name: 'Administration',
+        description: 'Administrative department'
+      });
+      await department.save();
+    }
+
+    // Create admin user
+    const hashedPassword = await bcrypt.hash('admin123', 10);
+    const adminUser = new User({
+      name: 'Admin User',
+      email: 'admin@example.com',
+      password: hashedPassword,
+      role: 'admin',
+      department: department._id
+    });
+
+    await adminUser.save();
+
+    res.json({ 
+      message: 'Admin user created successfully',
+      email: 'admin@example.com',
+      password: 'admin123',
+      note: 'Please change this password after first login'
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      error: 'Setup failed', 
+      message: error.message 
+    });
+  }
 });
 
 // Routes

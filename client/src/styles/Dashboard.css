@@ -373,6 +373,32 @@
   background: #d1d5db;
 }
 
+.delete-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s;
+  padding: 10px;
+}
+
+.delete-btn:hover {
+  background: #dc2626;
+}
+
+.task-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.task-actions .update-btn,
+.task-actions .delete-btn {
+  flex: 1;
+}
+
 .no-tasks {
   text-align: center;
   color: #666;

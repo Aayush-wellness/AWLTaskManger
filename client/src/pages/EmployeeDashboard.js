@@ -98,6 +98,15 @@ const EmployeeDashboard = () => {
     }
   };
 
+  const handleDeleteTask = async (taskId) => {
+    try {
+      await axios.delete(`/api/tasks/${taskId}`);
+      fetchTasks();
+    } catch (err) {
+      alert('Failed to delete task');
+    }
+  };
+
   const handleDownloadExcel = async () => {
     try {
       const params = new URLSearchParams();
@@ -258,7 +267,7 @@ const EmployeeDashboard = () => {
             <p className="no-tasks">No tasks found. {filters.status !== 'all' || filters.project !== 'all' || filters.startDate || filters.endDate ? 'Try adjusting your filters.' : 'Click "Add Task" to create one.'}</p>
           ) : (
             filteredTasks.map(task => (
-              <TaskCard key={task._id} task={task} onUpdate={handleUpdateTask} />
+              <TaskCard key={task._id} task={task} onUpdate={handleUpdateTask} onDelete={handleDeleteTask} />
             ))
           )}
         </div>
@@ -415,14 +424,33 @@ const EmployeeDashboard = () => {
   );
 };
 
-const TaskCard = ({ task, onUpdate }) => {
+const TaskCard = ({ task, onUpdate, onDelete }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [status, setStatus] = useState(task.status);
   const [remark, setRemark] = useState(task.remark || '');
 
+  // Reset local state when task prop changes
+  useEffect(() => {
+    setStatus(task.status);
+    setRemark(task.remark || '');
+  }, [task.status, task.remark]);
+
   const handleSave = () => {
     onUpdate(task._id, status, remark);
     setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    // Reset to original values
+    setStatus(task.status);
+    setRemark(task.remark || '');
+    setIsEditing(false);
+  };
+
+  const handleDelete = () => {
+    if (window.confirm('Are you sure you want to delete this task? This action cannot be undone.')) {
+      onDelete(task._id);
+    }
   };
 
   const statusColors = {
@@ -444,8 +472,8 @@ const TaskCard = ({ task, onUpdate }) => {
     <div className="task-card">
       <div className="task-header">
         <h3>{task.title}</h3>
-        <span className="status-badge" style={{ background: statusColors[status] }}>
-          {status}
+        <span className="status-badge" style={{ background: statusColors[task.status] }}>
+          {task.status}
         </span>
       </div>
       <p className="task-date">
@@ -469,16 +497,21 @@ const TaskCard = ({ task, onUpdate }) => {
             rows="2"
           />
           <div className="task-actions">
-            <button onClick={() => setIsEditing(false)} className="cancel-btn">Cancel</button>
+            <button onClick={handleCancel} className="cancel-btn">Cancel</button>
             <button onClick={handleSave} className="save-btn">Save</button>
           </div>
         </div>
       ) : (
         <>
-          {remark && <p className="task-remark">Remark: {remark}</p>}
-          <button onClick={() => setIsEditing(true)} className="update-btn">
-            Update Status
-          </button>
+          {task.remark && <p className="task-remark">Remark: {task.remark}</p>}
+          <div className="task-actions">
+            <button onClick={() => setIsEditing(true)} className="update-btn">
+              Update Status
+            </button>
+            <button onClick={handleDelete} className="delete-btn">
+              Delete
+            </button>
+          </div>
         </>
       )}
     </div>
