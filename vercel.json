@@ -23,11 +23,35 @@
       "dest": "/client/build/static/$1"
     },
     {
-      "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|json|txt|map))",
+      "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|json|txt|map|webmanifest))",
       "dest": "/client/build/$1"
     },
     {
-      "src": "/(.*)",
+      "src": "/favicon.ico",
+      "dest": "/client/build/favicon.ico"
+    },
+    {
+      "src": "/manifest.json",
+      "dest": "/client/build/manifest.json"
+    },
+    {
+      "src": "/login",
+      "dest": "/client/build/index.html"
+    },
+    {
+      "src": "/register",
+      "dest": "/client/build/index.html"
+    },
+    {
+      "src": "/employee",
+      "dest": "/client/build/index.html"
+    },
+    {
+      "src": "/admin",
+      "dest": "/client/build/index.html"
+    },
+    {
+      "src": "/",
       "dest": "/client/build/index.html"
     }
   ]
