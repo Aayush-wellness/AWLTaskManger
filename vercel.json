@@ -27,31 +27,7 @@
       "dest": "/client/build/$1"
     },
     {
-      "src": "/favicon.ico",
-      "dest": "/client/build/favicon.ico"
-    },
-    {
-      "src": "/manifest.json",
-      "dest": "/client/build/manifest.json"
-    },
-    {
-      "src": "/login",
-      "dest": "/client/build/index.html"
-    },
-    {
-      "src": "/register",
-      "dest": "/client/build/index.html"
-    },
-    {
-      "src": "/employee",
-      "dest": "/client/build/index.html"
-    },
-    {
-      "src": "/admin",
-      "dest": "/client/build/index.html"
-    },
-    {
-      "src": "/",
+      "src": "/(.*)",
       "dest": "/client/build/index.html"
     }
   ]
