@@ -21,10 +21,6 @@ const ProjectDetails = ({ project, onClose, onRefresh, userRole }) => {
   });
   const [newDocLink, setNewDocLink] = useState({ name: '', url: '' });
 
-  useEffect(() => {
-    fetchVendors();
-  }, [project._id, fetchVendors]);
-
   const fetchVendors = useCallback(async () => {
     try {
       const res = await axios.get(`/api/project-vendors/project/${project._id}`);
@@ -33,6 +29,10 @@ const ProjectDetails = ({ project, onClose, onRefresh, userRole }) => {
       console.error('Failed to fetch vendors');
     }
   }, [project._id]);
+
+  useEffect(() => {
+    fetchVendors();
+  }, [fetchVendors]);
 
   const handleAddVendor = () => {
     setEditingVendor(null);

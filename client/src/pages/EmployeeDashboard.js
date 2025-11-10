@@ -24,15 +24,6 @@ const EmployeeDashboard = () => {
     project: 'all'
   });
 
-  useEffect(() => {
-    fetchTasks();
-    fetchProjects();
-  }, []);
-
-  useEffect(() => {
-    applyFilters();
-  }, [tasks, filters, applyFilters]);
-
   const fetchTasks = async () => {
     try {
       const res = await axios.get('/api/tasks');
@@ -76,6 +67,15 @@ const EmployeeDashboard = () => {
 
     setFilteredTasks(filtered);
   }, [tasks, filters]);
+
+  useEffect(() => {
+    fetchTasks();
+    fetchProjects();
+  }, []);
+
+  useEffect(() => {
+    applyFilters();
+  }, [applyFilters]);
 
   const handleAddTask = async (e) => {
     e.preventDefault();
