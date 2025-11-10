@@ -23,9 +23,9 @@
       "dest": "/client/build/$1"
     }
   ],
-  "env": {
-    "MONGODB_URI": "@mongodb_uri",
-    "JWT_SECRET": "@jwt_secret",
-    "NODE_ENV": "production"
+  "functions": {
+    "server/server.js": {
+      "maxDuration": 30
+    }
   }
 }
