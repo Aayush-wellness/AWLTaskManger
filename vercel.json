@@ -31,12 +31,6 @@
       "dest": "/client/build/index.html"
     }
   ],
-  "rewrites": [
-    {
-      "source": "/((?!api).*)",
-      "destination": "/client/build/index.html"
-    }
-  ],
   "env": {
     "MONGODB_URI": "@mongodb_uri",
     "JWT_SECRET": "@jwt_secret",
