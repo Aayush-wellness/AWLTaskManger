@@ -37,31 +37,47 @@ const RootRedirect = () => {
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route 
-            path="/employee" 
-            element={
-              <PrivateRoute>
-                <EmployeeDashboard />
-              </PrivateRoute>
-            } 
-          />
-          <Route 
-            path="/admin" 
-            element={
-              <PrivateRoute adminOnly>
-                <AdminDashboard />
-              </PrivateRoute>
-            } 
-          />
-          <Route path="/" element={<RootRedirect />} />
-        </Routes>
-      </Router>
-    </AuthProvider>
+    <div>
+      {/* Temporary debug indicator */}
+      <div style={{ 
+        position: 'fixed', 
+        top: 0, 
+        right: 0, 
+        background: 'blue', 
+        color: 'white', 
+        padding: '5px 10px',
+        zIndex: 9999,
+        fontSize: '12px'
+      }}>
+        React App Loaded
+      </div>
+      
+      <AuthProvider>
+        <Router>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route 
+              path="/employee" 
+              element={
+                <PrivateRoute>
+                  <EmployeeDashboard />
+                </PrivateRoute>
+              } 
+            />
+            <Route 
+              path="/admin" 
+              element={
+                <PrivateRoute adminOnly>
+                  <AdminDashboard />
+                </PrivateRoute>
+              } 
+            />
+            <Route path="/" element={<RootRedirect />} />
+          </Routes>
+        </Router>
+      </AuthProvider>
+    </div>
   );
 }
 
