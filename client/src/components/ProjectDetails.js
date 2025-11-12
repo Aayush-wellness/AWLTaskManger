@@ -26,6 +26,11 @@ const ProjectDetails = ({ project, onClose, onRefresh, userRole }) => {
   const fetchVendors = useCallback(async () => {
     try {
       const res = await axios.get(`/api/project-vendors/project/${project._id}`);
+      console.log('Fetched vendors data:', res.data);
+      // Debug: Log document links for each vendor
+      res.data.forEach((vendor, idx) => {
+        console.log(`Vendor ${idx} documentLinks:`, vendor.documentLinks);
+      });
       setVendors(res.data);
     } catch (err) {
       console.error('Failed to fetch vendors');
@@ -521,9 +526,11 @@ const ProjectDetails = ({ project, onClose, onRefresh, userRole }) => {
                     </div>
                   )}
                   
-                  {viewingVendor.documentLinks && viewingVendor.documentLinks.length > 0 && (
-                    <div className="view-section">
-                      <label>Documents:</label>
+                  {/* Debug: Always show document section to see what's happening */}
+                  <div className="view-section">
+                    <label>Documents:</label>
+                    {console.log('ViewingVendor documentLinks:', viewingVendor.documentLinks)}
+                    {viewingVendor.documentLinks && viewingVendor.documentLinks.length > 0 ? (
                       <div className="document-links-view">
                         {viewingVendor.documentLinks.map((doc, idx) => (
                           <a key={idx} href={doc.url} target="_blank" rel="noopener noreferrer" className="doc-link-view">
@@ -533,8 +540,18 @@ const ProjectDetails = ({ project, onClose, onRefresh, userRole }) => {
                           </a>
                         ))}
                       </div>
-                    </div>
-                  )}
+                    ) : (
+                      <div className="no-documents">
+                        <p style={{ color: '#666', fontStyle: 'italic' }}>
+                          No documents attached to this entry.
+                        </p>
+                        {/* Debug info */}
+                        <small style={{ color: '#999', fontSize: '11px' }}>
+                          Debug: documentLinks = {JSON.stringify(viewingVendor.documentLinks)}
+                        </small>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
               
