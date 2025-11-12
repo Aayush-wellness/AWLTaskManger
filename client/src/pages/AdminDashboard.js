@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, Download, Plus, Users, FolderKanban, Briefcase } from 'lucide-react';
@@ -27,8 +27,7 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters]);
+  }, [fetchData]);
 
   // Real-time updates - poll every 30 seconds when on tasks tab
   useEffect(() => {
@@ -41,9 +40,9 @@ const AdminDashboard = () => {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [activeTab, filters]);
+  }, [activeTab, fetchData]);
 
-  const fetchData = async (showLoading = false) => {
+  const fetchData = useCallback(async (showLoading = false) => {
     if (showLoading) setIsRefreshing(true);
     try {
       const [tasksRes, employeesRes, deptRes, projRes] = await Promise.all([
@@ -62,7 +61,7 @@ const AdminDashboard = () => {
     } finally {
       if (showLoading) setIsRefreshing(false);
     }
-  };
+  }, [filters]);
 
   const handleManualRefresh = () => {
     fetchData(true);

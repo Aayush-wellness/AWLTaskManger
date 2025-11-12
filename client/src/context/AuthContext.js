@@ -30,10 +30,16 @@ export const AuthProvider = ({ children }) => {
     const interceptor = axios.interceptors.response.use(
       (response) => response,
       (error) => {
-        if (error.response?.status === 401 && error.response?.data?.message?.includes('Token')) {
+        // Only logout on actual token expiration, not on other 401 errors
+        if (error.response?.status === 401 && 
+            (error.response?.data?.message?.includes('Token expired') || 
+             error.response?.data?.message?.includes('Invalid token'))) {
           console.log('Token expired or invalid, logging out...');
           logout();
-          window.location.href = '/login';
+          // Only redirect if not already on login page
+          if (window.location.pathname !== '/login') {
+            window.location.href = '/login';
+          }
         }
         return Promise.reject(error);
       }
