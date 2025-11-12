@@ -55,6 +55,7 @@ const ProjectDetails = ({ project, onClose, onRefresh, userRole }) => {
       status: 'pending',
       documentLinks: []
     });
+    setNewDocLink({ name: '', url: '' });
     setShowVendorModal(true);
   };
 
@@ -72,25 +73,36 @@ const ProjectDetails = ({ project, onClose, onRefresh, userRole }) => {
       status: vendor.status,
       documentLinks: vendor.documentLinks || []
     });
+    setNewDocLink({ name: '', url: '' });
     setShowVendorModal(true);
   };
 
   const handleSubmitVendor = async (e) => {
     e.preventDefault();
+    console.log('Submitting vendor form with data:', vendorForm);
+    console.log('Document links being submitted:', vendorForm.documentLinks);
+    
     try {
+      const submitData = {
+        ...vendorForm,
+        project: project._id
+      };
+      
+      console.log('Final submit data:', submitData);
+      
       if (editingVendor) {
-        await axios.put(`/api/project-vendors/${editingVendor._id}`, vendorForm);
+        const response = await axios.put(`/api/project-vendors/${editingVendor._id}`, vendorForm);
+        console.log('Update response:', response.data);
       } else {
-        await axios.post('/api/project-vendors', {
-          ...vendorForm,
-          project: project._id
-        });
+        const response = await axios.post('/api/project-vendors', submitData);
+        console.log('Create response:', response.data);
       }
       setShowVendorModal(false);
       fetchVendors();
       if (onRefresh) onRefresh();
     } catch (err) {
-      alert('Failed to save vendor');
+      console.error('Submit error:', err);
+      alert('Failed to save vendor: ' + (err.response?.data?.message || err.message));
     }
   };
 
@@ -115,19 +127,32 @@ const ProjectDetails = ({ project, onClose, onRefresh, userRole }) => {
   };
 
   const handleAddDocLink = () => {
+    console.log('handleAddDocLink called with:', newDocLink);
+    console.log('Current vendorForm.documentLinks:', vendorForm.documentLinks);
+    
     if (newDocLink.name && newDocLink.url) {
+      const updatedDocumentLinks = [...(vendorForm.documentLinks || []), { ...newDocLink }];
+      console.log('Adding document link, updated list:', updatedDocumentLinks);
+      
       setVendorForm({
         ...vendorForm,
-        documentLinks: [...vendorForm.documentLinks, { ...newDocLink }]
+        documentLinks: updatedDocumentLinks
       });
       setNewDocLink({ name: '', url: '' });
+    } else {
+      console.log('Validation failed - name or url missing:', { name: newDocLink.name, url: newDocLink.url });
+      alert('Please enter both document name and URL');
     }
   };
 
   const handleRemoveDocLink = (index) => {
+    console.log('Removing document link at index:', index);
+    const updatedDocumentLinks = (vendorForm.documentLinks || []).filter((_, i) => i !== index);
+    console.log('Updated document links after removal:', updatedDocumentLinks);
+    
     setVendorForm({
       ...vendorForm,
-      documentLinks: vendorForm.documentLinks.filter((_, i) => i !== index)
+      documentLinks: updatedDocumentLinks
     });
   };
 
@@ -394,7 +419,7 @@ const ProjectDetails = ({ project, onClose, onRefresh, userRole }) => {
                       <Plus size={18} />
                     </button>
                   </div>
-                  {vendorForm.documentLinks.length > 0 && (
+                  {vendorForm.documentLinks && vendorForm.documentLinks.length > 0 && (
                     <div className="added-links">
                       {vendorForm.documentLinks.map((doc, idx) => (
                         <div key={idx} className="link-item">
