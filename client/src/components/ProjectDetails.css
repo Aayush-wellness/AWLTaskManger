@@ -159,6 +159,16 @@
   border-color: #667eea;
 }
 
+.icon-btn.view:hover {
+  background: #10b981;
+  border-color: #10b981;
+}
+
+.icon-btn.edit:hover {
+  background: #667eea;
+  border-color: #667eea;
+}
+
 .icon-btn.delete:hover {
   background: #ef4444;
   border-color: #ef4444;
@@ -386,6 +396,118 @@
   color: #dc2626;
 }
 
+/* View Modal */
+.view-modal {
+  max-width: 600px;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.view-content {
+  padding: 20px 30px;
+}
+
+.view-section {
+  margin-bottom: 24px;
+}
+
+.view-section h3 {
+  margin: 0 0 16px 0;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.view-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.view-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.view-item label {
+  font-weight: 600;
+  color: #666;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.view-item span {
+  color: #333;
+  font-size: 15px;
+}
+
+.contact-link {
+  color: #667eea;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.contact-link:hover {
+  color: #5a67d8;
+  text-decoration: underline;
+}
+
+.quote-amount {
+  font-weight: 700;
+  color: #10b981;
+  font-size: 16px;
+}
+
+.capitalize {
+  text-transform: capitalize;
+}
+
+.notes-content {
+  background: #f9fafb;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  color: #333;
+  line-height: 1.6;
+  margin-top: 8px;
+}
+
+.document-links-view {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.doc-link-view {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  color: #667eea;
+  text-decoration: none;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.doc-link-view:hover {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.doc-link-view span {
+  flex: 1;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .project-details-modal {
@@ -415,5 +537,17 @@
   .add-btn-small {
     width: 100%;
     justify-content: center;
+  }
+
+  .view-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .view-content {
+    padding: 15px 20px;
+  }
+
+  .vendor-actions {
+    flex-wrap: wrap;
   }
 }

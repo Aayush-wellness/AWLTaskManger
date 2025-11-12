@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
-import { X, Plus, Edit2, Trash2, ExternalLink, FileText } from 'lucide-react';
+import { X, Plus, Edit2, Trash2, ExternalLink, FileText, Eye } from 'lucide-react';
 import axios from '../config/axios';
 import './ProjectDetails.css';
 
 const ProjectDetails = ({ project, onClose, onRefresh, userRole }) => {
   const [vendors, setVendors] = useState([]);
   const [showVendorModal, setShowVendorModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [viewingVendor, setViewingVendor] = useState(null);
   const [editingVendor, setEditingVendor] = useState(null);
   const [vendorForm, setVendorForm] = useState({
     entryType: 'vendor',
@@ -87,14 +89,23 @@ const ProjectDetails = ({ project, onClose, onRefresh, userRole }) => {
     }
   };
 
+  const handleViewVendor = (vendor) => {
+    setViewingVendor(vendor);
+    setShowViewModal(true);
+  };
+
   const handleDeleteVendor = async (vendorId) => {
-    if (!window.confirm('Are you sure you want to delete this vendor?')) return;
+    if (!window.confirm('Are you sure you want to delete this entry? This action cannot be undone.')) return;
     try {
-      await axios.delete(`/api/project-vendors/${vendorId}`);
+      const response = await axios.delete(`/api/project-vendors/${vendorId}`);
+      console.log('Delete response:', response);
+      alert('Entry deleted successfully!');
       fetchVendors();
       if (onRefresh) onRefresh();
     } catch (err) {
-      alert('Failed to delete vendor');
+      console.error('Delete error:', err);
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to delete entry';
+      alert(`Error: ${errorMessage}`);
     }
   };
 
@@ -166,10 +177,25 @@ const ProjectDetails = ({ project, onClose, onRefresh, userRole }) => {
                       )}
                     </div>
                     <div className="vendor-actions">
-                      <button onClick={() => handleEditVendor(vendor)} className="icon-btn">
+                      <button 
+                        onClick={() => handleViewVendor(vendor)} 
+                        className="icon-btn view"
+                        title="View Details"
+                      >
+                        <Eye size={16} />
+                      </button>
+                      <button 
+                        onClick={() => handleEditVendor(vendor)} 
+                        className="icon-btn edit"
+                        title="Edit Entry"
+                      >
                         <Edit2 size={16} />
                       </button>
-                      <button onClick={() => handleDeleteVendor(vendor._id)} className="icon-btn delete">
+                      <button 
+                        onClick={() => handleDeleteVendor(vendor._id)} 
+                        className="icon-btn delete"
+                        title="Delete Entry"
+                      >
                         <Trash2 size={16} />
                       </button>
                     </div>
@@ -380,6 +406,145 @@ const ProjectDetails = ({ project, onClose, onRefresh, userRole }) => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {showViewModal && viewingVendor && (
+          <div className="modal-overlay" onClick={() => setShowViewModal(false)}>
+            <div className="modal view-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>Entry Details</h2>
+                <button onClick={() => setShowViewModal(false)} className="close-btn">
+                  <X size={24} />
+                </button>
+              </div>
+              
+              <div className="view-content">
+                <div className="view-section">
+                  <h3>
+                    {viewingVendor.vendorName || viewingVendor.agencyName || 'Document Entry'}
+                    <span className="entry-type-badge">{viewingVendor.entryType || 'vendor'}</span>
+                  </h3>
+                  
+                  <div className="view-grid">
+                    <div className="view-item">
+                      <label>Entry Type:</label>
+                      <span className="capitalize">{viewingVendor.entryType || 'vendor'}</span>
+                    </div>
+                    
+                    {viewingVendor.vendorName && (
+                      <div className="view-item">
+                        <label>Vendor Name:</label>
+                        <span>{viewingVendor.vendorName}</span>
+                      </div>
+                    )}
+                    
+                    {viewingVendor.agencyName && (
+                      <div className="view-item">
+                        <label>Agency Name:</label>
+                        <span>{viewingVendor.agencyName}</span>
+                      </div>
+                    )}
+                    
+                    {viewingVendor.contactPerson && (
+                      <div className="view-item">
+                        <label>Contact Person:</label>
+                        <span>{viewingVendor.contactPerson}</span>
+                      </div>
+                    )}
+                    
+                    {viewingVendor.contactEmail && (
+                      <div className="view-item">
+                        <label>Contact Email:</label>
+                        <span>
+                          <a href={`mailto:${viewingVendor.contactEmail}`} className="contact-link">
+                            {viewingVendor.contactEmail}
+                          </a>
+                        </span>
+                      </div>
+                    )}
+                    
+                    {viewingVendor.contactPhone && (
+                      <div className="view-item">
+                        <label>Contact Phone:</label>
+                        <span>
+                          <a href={`tel:${viewingVendor.contactPhone}`} className="contact-link">
+                            {viewingVendor.contactPhone}
+                          </a>
+                        </span>
+                      </div>
+                    )}
+                    
+                    {viewingVendor.quote && (
+                      <div className="view-item">
+                        <label>Quote:</label>
+                        <span className="quote-amount">₹{viewingVendor.quote.toLocaleString('en-IN')}</span>
+                      </div>
+                    )}
+                    
+                    <div className="view-item">
+                      <label>Status:</label>
+                      <span className="status-badge-small" style={{ background: getStatusColor(viewingVendor.status) }}>
+                        {viewingVendor.status}
+                      </span>
+                    </div>
+                    
+                    <div className="view-item">
+                      <label>Added by:</label>
+                      <span>{viewingVendor.addedBy?.name}</span>
+                    </div>
+                    
+                    <div className="view-item">
+                      <label>Added on:</label>
+                      <span>{new Date(viewingVendor.createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}</span>
+                    </div>
+                  </div>
+                  
+                  {viewingVendor.notes && (
+                    <div className="view-section">
+                      <label>Notes:</label>
+                      <div className="notes-content">{viewingVendor.notes}</div>
+                    </div>
+                  )}
+                  
+                  {viewingVendor.documentLinks && viewingVendor.documentLinks.length > 0 && (
+                    <div className="view-section">
+                      <label>Documents:</label>
+                      <div className="document-links-view">
+                        {viewingVendor.documentLinks.map((doc, idx) => (
+                          <a key={idx} href={doc.url} target="_blank" rel="noopener noreferrer" className="doc-link-view">
+                            <FileText size={16} />
+                            <span>{doc.name}</span>
+                            <ExternalLink size={14} />
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              <div className="modal-actions">
+                <button onClick={() => setShowViewModal(false)} className="cancel-btn">
+                  Close
+                </button>
+                <button 
+                  onClick={() => {
+                    setShowViewModal(false);
+                    handleEditVendor(viewingVendor);
+                  }} 
+                  className="submit-btn"
+                >
+                  Edit Entry
+                </button>
+              </div>
             </div>
           </div>
         )}
