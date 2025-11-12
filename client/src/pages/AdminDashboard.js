@@ -25,23 +25,7 @@ const AdminDashboard = () => {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  // Real-time updates - poll every 30 seconds when on tasks tab
-  useEffect(() => {
-    let interval;
-    if (activeTab === 'tasks' || activeTab === 'dashboard') {
-      interval = setInterval(() => {
-        fetchData();
-      }, 30000); // Poll every 30 seconds
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [activeTab, fetchData]);
-
+  // Define fetchData function first
   const fetchData = useCallback(async (showLoading = false) => {
     if (showLoading) setIsRefreshing(true);
     try {
@@ -63,9 +47,30 @@ const AdminDashboard = () => {
     }
   }, [filters]);
 
-  const handleManualRefresh = () => {
+  // Define handleManualRefresh function
+  const handleManualRefresh = useCallback(() => {
     fetchData(true);
-  };
+  }, [fetchData]);
+
+  // Effects that use fetchData
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Real-time updates - poll every 30 seconds when on tasks tab
+  useEffect(() => {
+    let interval;
+    if (activeTab === 'tasks' || activeTab === 'dashboard') {
+      interval = setInterval(() => {
+        fetchData();
+      }, 30000); // Poll every 30 seconds
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [activeTab, fetchData]);
+
+
 
   const handleDownloadExcel = async () => {
     try {
