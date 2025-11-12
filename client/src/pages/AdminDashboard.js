@@ -22,13 +22,29 @@ const AdminDashboard = () => {
     startDate: '',
     endDate: ''
   });
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
-  const fetchData = async () => {
+  // Real-time updates - poll every 30 seconds when on tasks tab
+  useEffect(() => {
+    let interval;
+    if (activeTab === 'tasks' || activeTab === 'dashboard') {
+      interval = setInterval(() => {
+        fetchData();
+      }, 30000); // Poll every 30 seconds
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [activeTab, filters]);
+
+  const fetchData = async (showLoading = false) => {
+    if (showLoading) setIsRefreshing(true);
     try {
       const [tasksRes, employeesRes, deptRes, projRes] = await Promise.all([
         axios.get('/api/tasks', { params: filters }),
@@ -40,9 +56,16 @@ const AdminDashboard = () => {
       setEmployees(employeesRes.data);
       setDepartments(deptRes.data);
       setProjects(projRes.data);
+      setLastUpdated(new Date());
     } catch (err) {
       console.error('Failed to fetch data');
+    } finally {
+      if (showLoading) setIsRefreshing(false);
     }
+  };
+
+  const handleManualRefresh = () => {
+    fetchData(true);
   };
 
   const handleDownloadExcel = async () => {
@@ -169,7 +192,23 @@ const AdminDashboard = () => {
         {activeTab === 'tasks' && (
           <>
             <div className="filters-section">
-              <h3>Filter Tasks</h3>
+              <div className="filters-header">
+                <h3>Filter Tasks</h3>
+                <div className="refresh-section">
+                  {lastUpdated && (
+                    <span className="last-updated">
+                      Last updated: {lastUpdated.toLocaleTimeString()}
+                    </span>
+                  )}
+                  <button 
+                    onClick={handleManualRefresh} 
+                    className={`refresh-btn ${isRefreshing ? 'refreshing' : ''}`}
+                    disabled={isRefreshing}
+                  >
+                    🔄 {isRefreshing ? 'Refreshing...' : 'Refresh'}
+                  </button>
+                </div>
+              </div>
               <div className="filters-grid">
                 <select
                   value={filters.department}
