@@ -9,7 +9,13 @@ const Login = () => {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
+  const [resetForm, setResetForm] = useState({
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [showResetConfirmPassword, setShowResetConfirmPassword] = useState(false);
   const [forgotPasswordMessage, setForgotPasswordMessage] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -32,17 +38,33 @@ const Login = () => {
     }
   };
 
-  const handleForgotPassword = async (e) => {
+  const handleResetPassword = async (e) => {
     e.preventDefault();
     setForgotPasswordMessage('');
     setError('');
 
+    if (resetForm.password !== resetForm.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    if (resetForm.password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+
     try {
-      await axios.post('/api/auth/forgot-password', { email: forgotPasswordEmail });
-      setForgotPasswordMessage('Password reset email sent! Check your inbox.');
-      setForgotPasswordEmail('');
+      const res = await axios.post('/api/auth/reset-password', resetForm);
+      setForgotPasswordMessage(res.data.message);
+      setResetForm({ email: '', password: '', confirmPassword: '' });
+      
+      // Auto redirect to login after 2 seconds
+      setTimeout(() => {
+        setShowForgotPassword(false);
+        setForgotPasswordMessage('');
+      }, 2000);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to send reset email');
+      setError(err.response?.data?.message || 'Failed to reset password');
     }
   };
 
@@ -91,19 +113,56 @@ const Login = () => {
             </p>
           </form>
         ) : (
-          <form onSubmit={handleForgotPassword}>
+          <form onSubmit={handleResetPassword}>
             <input
               type="email"
               placeholder="Enter your email"
-              value={forgotPasswordEmail}
-              onChange={(e) => setForgotPasswordEmail(e.target.value)}
+              value={resetForm.email}
+              onChange={(e) => setResetForm({ ...resetForm, email: e.target.value })}
               required
             />
-            <button type="submit">Send Reset Email</button>
+            <div className="password-input-container">
+              <input
+                type={showResetPassword ? "text" : "password"}
+                placeholder="New Password (min 6 characters)"
+                value={resetForm.password}
+                onChange={(e) => setResetForm({ ...resetForm, password: e.target.value })}
+                required
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowResetPassword(!showResetPassword)}
+              >
+                {showResetPassword ? '👁️' : '👁️‍🗨️'}
+              </button>
+            </div>
+            <div className="password-input-container">
+              <input
+                type={showResetConfirmPassword ? "text" : "password"}
+                placeholder="Confirm New Password"
+                value={resetForm.confirmPassword}
+                onChange={(e) => setResetForm({ ...resetForm, confirmPassword: e.target.value })}
+                required
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowResetConfirmPassword(!showResetConfirmPassword)}
+              >
+                {showResetConfirmPassword ? '👁️' : '👁️‍🗨️'}
+              </button>
+            </div>
+            <button type="submit">Reset Password</button>
             <p className="back-to-login">
               <button 
                 type="button" 
-                onClick={() => setShowForgotPassword(false)}
+                onClick={() => {
+                  setShowForgotPassword(false);
+                  setResetForm({ email: '', password: '', confirmPassword: '' });
+                  setError('');
+                  setForgotPasswordMessage('');
+                }}
                 className="link-button"
               >
                 Back to Login

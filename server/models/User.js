@@ -22,12 +22,6 @@ const userSchema = new mongoose.Schema({
   department: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Department'
-  },
-  resetPasswordToken: {
-    type: String
-  },
-  resetPasswordExpiry: {
-    type: Date
   }
 }, { timestamps: true });
 
