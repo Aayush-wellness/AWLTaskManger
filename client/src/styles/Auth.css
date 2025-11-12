@@ -86,3 +86,61 @@
   margin-bottom: 16px;
   text-align: center;
 }
+
+.success-message {
+  background: #efe;
+  color: #3c3;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.password-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-container input {
+  flex: 1;
+  padding-right: 45px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  font-size: 18px;
+  cursor: pointer;
+  color: #666;
+  z-index: 1;
+}
+
+.password-toggle:hover {
+  transform: none !important;
+  color: #333;
+}
+
+.link-button {
+  background: none !important;
+  border: none !important;
+  color: #667eea !important;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 !important;
+}
+
+.link-button:hover {
+  transform: none !important;
+  color: #5a67d8 !important;
+}
+
+.forgot-password-link,
+.back-to-login {
+  margin-top: 10px;
+  text-align: center;
+}

@@ -1,40 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import React, { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from '../config/axios';
 import '../styles/Auth.css';
 
-const Register = () => {
+const ResetPassword = () => {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
     password: '',
-    confirmPassword: '',
-    department: ''
+    confirmPassword: ''
   });
-  const [departments, setDepartments] = useState([]);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const { login } = useAuth();
+  const { token } = useParams();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    fetchDepartments();
-  }, []);
-
-  const fetchDepartments = async () => {
-    try {
-      const res = await axios.get('/api/departments');
-      setDepartments(res.data);
-    } catch (err) {
-      console.error('Failed to fetch departments');
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
 
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
@@ -47,12 +31,18 @@ const Register = () => {
     }
 
     try {
-      const { confirmPassword, ...submitData } = formData;
-      const res = await axios.post('/api/auth/register', submitData);
-      login(res.data.token, res.data.user);
-      navigate('/employee');
+      await axios.post('/api/auth/reset-password', {
+        token,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword
+      });
+      
+      setSuccess('Password reset successful! Redirecting to login...');
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed');
+      setError(err.response?.data?.message || 'Password reset failed');
     }
   };
 
@@ -60,27 +50,15 @@ const Register = () => {
     <div className="auth-container">
       <div className="auth-card">
         <h1>Task Management</h1>
-        <h2>Register</h2>
+        <h2>Reset Password</h2>
         {error && <div className="error-message">{error}</div>}
+        {success && <div className="success-message">{success}</div>}
+        
         <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            placeholder="Full Name"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            required
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            required
-          />
           <div className="password-input-container">
             <input
               type={showPassword ? "text" : "password"}
-              placeholder="Password (min 6 characters)"
+              placeholder="New Password (min 6 characters)"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               required
@@ -93,10 +71,11 @@ const Register = () => {
               {showPassword ? '👁️' : '👁️‍🗨️'}
             </button>
           </div>
+          
           <div className="password-input-container">
             <input
               type={showConfirmPassword ? "text" : "password"}
-              placeholder="Confirm Password"
+              placeholder="Confirm New Password"
               value={formData.confirmPassword}
               onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
               required
@@ -109,22 +88,12 @@ const Register = () => {
               {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
             </button>
           </div>
-          <select
-            value={formData.department}
-            onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-            required
-          >
-            <option value="">Select Department</option>
-            {departments.map(dept => (
-              <option key={dept._id} value={dept._id}>{dept.name}</option>
-            ))}
-          </select>
-          <button type="submit">Register</button>
+          
+          <button type="submit">Reset Password</button>
         </form>
-        <p>Already have an account? <Link to="/login">Login</Link></p>
       </div>
     </div>
   );
 };
 
-export default Register;
+export default ResetPassword;
