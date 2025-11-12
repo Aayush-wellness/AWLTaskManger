@@ -240,7 +240,7 @@ const ProjectDetails = ({ project, onClose, onRefresh, userRole }) => {
 
                   {vendor.documentLinks && vendor.documentLinks.length > 0 && (
                     <div className="document-links">
-                      <strong>Documents:</strong>
+                      <strong>Documents ({vendor.documentLinks.length}):</strong>
                       <div className="links-list">
                         {vendor.documentLinks.map((doc, idx) => (
                           <a key={idx} href={doc.url} target="_blank" rel="noopener noreferrer" className="doc-link">
@@ -250,6 +250,13 @@ const ProjectDetails = ({ project, onClose, onRefresh, userRole }) => {
                           </a>
                         ))}
                       </div>
+                    </div>
+                  )}
+                  
+                  {/* Show if no document links */}
+                  {(!vendor.documentLinks || vendor.documentLinks.length === 0) && (
+                    <div className="document-links-empty">
+                      <small style={{ color: '#999', fontStyle: 'italic' }}>No documents attached</small>
                     </div>
                   )}
                 </div>
