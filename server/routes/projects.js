@@ -4,18 +4,38 @@ const Project = require('../models/Project');
 const ProjectVendor = require('../models/ProjectVendor');
 const { auth, adminAuth } = require('../middleware/auth');
 
-// Get all projects with vendor counts
+// Get all projects with vendor counts and document links
 router.get('/', auth, async (req, res) => {
   try {
     const projects = await Project.find().sort({ createdAt: -1 });
     
-    // Get vendor counts for each project
+    // Get vendor counts and document links for each project
     const projectsWithVendors = await Promise.all(
       projects.map(async (project) => {
         const vendorCount = await ProjectVendor.countDocuments({ project: project._id });
+        
+        // Get all document links from vendor entries for this project
+        const vendors = await ProjectVendor.find({ project: project._id });
+        const allDocumentLinks = [];
+        
+        vendors.forEach(vendor => {
+          if (vendor.documentLinks && vendor.documentLinks.length > 0) {
+            vendor.documentLinks.forEach(doc => {
+              allDocumentLinks.push({
+                name: doc.name,
+                url: doc.url,
+                vendorName: vendor.vendorName || vendor.agencyName || 'Document Entry',
+                entryType: vendor.entryType || 'vendor'
+              });
+            });
+          }
+        });
+        
         return {
           ...project.toObject(),
-          vendorCount
+          vendorCount,
+          documentLinks: allDocumentLinks,
+          documentCount: allDocumentLinks.length
         };
       })
     );

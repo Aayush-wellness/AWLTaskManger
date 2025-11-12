@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Plus, LogOut, Download, Filter, TrendingUp, CheckCircle, Clock, AlertCircle, Calendar } from 'lucide-react';
+import { Plus, LogOut, Download, Filter, TrendingUp, CheckCircle, Clock, AlertCircle, Calendar, FileText, ExternalLink } from 'lucide-react';
 import axios from '../config/axios';
 import ProjectDetails from '../components/ProjectDetails';
 import '../styles/Dashboard.css';
@@ -397,6 +397,36 @@ const EmployeeDashboard = () => {
                   >
                     <h3>{project.name}</h3>
                     <p>{project.description}</p>
+                    
+                    {/* Document Links Section */}
+                    {project.documentLinks && project.documentLinks.length > 0 && (
+                      <div className="project-documents">
+                        <div className="documents-header">
+                          <strong>Documents ({project.documentCount}):</strong>
+                        </div>
+                        <div className="document-links-preview">
+                          {project.documentLinks.slice(0, 3).map((doc, idx) => (
+                            <a 
+                              key={idx} 
+                              href={doc.url} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              className="doc-link-small"
+                              onClick={(e) => e.stopPropagation()}
+                              title={`${doc.name} (from ${doc.vendorName})`}
+                            >
+                              <FileText size={12} />
+                              {doc.name}
+                              <ExternalLink size={10} />
+                            </a>
+                          ))}
+                          {project.documentLinks.length > 3 && (
+                            <span className="more-docs">+{project.documentLinks.length - 3} more</span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    
                     <div className="card-footer">
                       <span className={`status-badge ${project.status}`}>{project.status}</span>
                       {project.vendorCount > 0 && (
