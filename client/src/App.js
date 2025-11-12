@@ -5,79 +5,64 @@ import Register from './pages/Register';
 import EmployeeDashboard from './pages/EmployeeDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import DebugInfo from './components/DebugInfo';
 
 const PrivateRoute = ({ children, adminOnly }) => {
   const { user } = useAuth();
   
   if (!user) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" replace />;
   }
   
   if (adminOnly && user.role !== 'admin') {
-    return <Navigate to="/employee" />;
+    return <Navigate to="/employee" replace />;
   }
   
   return children;
 };
 
-function App() {
-  // Emergency fallback - if nothing renders, show this
-  try {
-    return (
-      <div>
-        <div style={{ 
-          position: 'fixed', 
-          top: 0, 
-          left: 0, 
-          background: 'green', 
-          color: 'white', 
-          padding: '10px',
-          zIndex: 9999 
-        }}>
-          APP LOADED - React is working
-        </div>
-        <AuthProvider>
-          <Router>
-            <DebugInfo />
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route 
-                path="/employee" 
-                element={
-                  <PrivateRoute>
-                    <EmployeeDashboard />
-                  </PrivateRoute>
-                } 
-              />
-              <Route 
-                path="/admin" 
-                element={
-                  <PrivateRoute adminOnly>
-                    <AdminDashboard />
-                  </PrivateRoute>
-                } 
-              />
-              <Route path="/" element={<Navigate to="/login" />} />
-            </Routes>
-          </Router>
-        </AuthProvider>
-      </div>
-    );
-  } catch (error) {
-    return (
-      <div style={{ 
-        padding: '20px', 
-        background: 'red', 
-        color: 'white',
-        fontSize: '16px'
-      }}>
-        <h1>Error in App Component:</h1>
-        <pre>{error.toString()}</pre>
-      </div>
-    );
+const RootRedirect = () => {
+  const { user } = useAuth();
+  
+  if (!user) {
+    return <Navigate to="/login" replace />;
   }
+  
+  // Redirect based on user role
+  if (user.role === 'admin') {
+    return <Navigate to="/admin" replace />;
+  } else {
+    return <Navigate to="/employee" replace />;
+  }
+};
+
+function App() {
+  return (
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route 
+            path="/employee" 
+            element={
+              <PrivateRoute>
+                <EmployeeDashboard />
+              </PrivateRoute>
+            } 
+          />
+          <Route 
+            path="/admin" 
+            element={
+              <PrivateRoute adminOnly>
+                <AdminDashboard />
+              </PrivateRoute>
+            } 
+          />
+          <Route path="/" element={<RootRedirect />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
+  );
 }
 
 export default App;
