@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../config/axios';
 
 const AuthContext = createContext();
 
@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
     if (token && userData) {
       try {
         setUser(JSON.parse(userData));
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        // Token is handled by axios interceptor now
       } catch (error) {
         console.error('Error parsing user data:', error);
         logout();
@@ -53,14 +53,14 @@ export const AuthProvider = ({ children }) => {
   const login = (token, userData) => {
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(userData));
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    // Token is handled by axios interceptor now
     setUser(userData);
   };
 
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    delete axios.defaults.headers.common['Authorization'];
+    // Token removal is handled by axios interceptor now
     setUser(null);
   };
 

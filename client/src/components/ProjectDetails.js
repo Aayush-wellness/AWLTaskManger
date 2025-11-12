@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { X, Plus, Edit2, Trash2, ExternalLink, FileText } from 'lucide-react';
-import axios from 'axios';
+import axios from '../config/axios';
 import './ProjectDetails.css';
 
 const ProjectDetails = ({ project, onClose, onRefresh, userRole }) => {

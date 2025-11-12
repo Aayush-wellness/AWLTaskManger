@@ -5,6 +5,7 @@ import Register from './pages/Register';
 import EmployeeDashboard from './pages/EmployeeDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import DebugInfo from './components/DebugInfo';
 
 const PrivateRoute = ({ children, adminOnly }) => {
   const { user } = useAuth();
@@ -24,6 +25,7 @@ function App() {
   return (
     <AuthProvider>
       <Router>
+        <DebugInfo />
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />

@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, Download, Plus, Users, FolderKanban, Briefcase } from 'lucide-react';
 import { Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import axios from 'axios';
+import axios from '../config/axios';
 import ProjectDetails from '../components/ProjectDetails';
 import '../styles/Dashboard.css';
 
