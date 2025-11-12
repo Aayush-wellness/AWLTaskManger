@@ -6,6 +6,44 @@ import EmployeeDashboard from './pages/EmployeeDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
+// Error Boundary Component
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('Error Boundary caught an error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{
+          padding: '20px',
+          fontFamily: 'Arial, sans-serif',
+          background: '#fee',
+          border: '1px solid #fcc',
+          margin: '20px'
+        }}>
+          <h1>Something went wrong</h1>
+          <p>Error: {this.state.error?.message || 'Unknown error'}</p>
+          <button onClick={() => window.location.reload()}>
+            Reload Page
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 const PrivateRoute = ({ children, adminOnly }) => {
   const { user } = useAuth();
   
@@ -37,31 +75,33 @@ const RootRedirect = () => {
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route 
-            path="/employee" 
-            element={
-              <PrivateRoute>
-                <EmployeeDashboard />
-              </PrivateRoute>
-            } 
-          />
-          <Route 
-            path="/admin" 
-            element={
-              <PrivateRoute adminOnly>
-                <AdminDashboard />
-              </PrivateRoute>
-            } 
-          />
-          <Route path="/" element={<RootRedirect />} />
-        </Routes>
-      </Router>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <Router>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route 
+              path="/employee" 
+              element={
+                <PrivateRoute>
+                  <EmployeeDashboard />
+                </PrivateRoute>
+              } 
+            />
+            <Route 
+              path="/admin" 
+              element={
+                <PrivateRoute adminOnly>
+                  <AdminDashboard />
+                </PrivateRoute>
+              } 
+            />
+            <Route path="/" element={<RootRedirect />} />
+          </Routes>
+        </Router>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 
