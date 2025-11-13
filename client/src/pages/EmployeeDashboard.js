@@ -90,11 +90,16 @@ const EmployeeDashboard = () => {
   };
 
   const handleUpdateTask = async (taskId, status, remark) => {
+    console.log('Updating task:', { taskId, status, remark });
+    console.log('Remark value:', `"${remark}"`, 'Length:', remark.length);
+    
     try {
-      await axios.put(`/api/tasks/${taskId}`, { status, remark });
+      const response = await axios.put(`/api/tasks/${taskId}`, { status, remark });
+      console.log('Update response:', response.data);
       fetchTasks();
     } catch (err) {
-      alert('Failed to update task');
+      console.error('Update error:', err);
+      alert('Failed to update task: ' + (err.response?.data?.message || err.message));
     }
   };
 
@@ -466,6 +471,8 @@ const TaskCard = ({ task, onUpdate, onDelete }) => {
   }, [task.status, task.remark]);
 
   const handleSave = () => {
+    console.log('TaskCard handleSave called with:', { status, remark });
+    console.log('Remark details:', `"${remark}"`, 'Length:', remark.length, 'Type:', typeof remark);
     onUpdate(task._id, status, remark);
     setIsEditing(false);
   };

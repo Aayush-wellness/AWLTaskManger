@@ -77,7 +77,10 @@ router.put('/:id', auth, async (req, res) => {
     }
 
     task.status = status || task.status;
-    task.remark = remark || task.remark;
+    // Allow clearing remark by setting it to empty string
+    if (remark !== undefined) {
+      task.remark = remark;
+    }
 
     await task.save();
     const updatedTask = await Task.findById(task._id)
