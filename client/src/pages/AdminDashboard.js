@@ -217,7 +217,7 @@ const AdminDashboard = () => {
               <div className="filters-grid">
                 <select
                   value={filters.department}
-                  onChange={(e) => setFilters({ ...filters, department: e.target.value })}
+                  onChange={(e) => setFilters({ ...filters, department: e.target.value, employee: '' })}
                 >
                   <option value="">All Departments</option>
                   {departments.map(dept => (
@@ -229,9 +229,11 @@ const AdminDashboard = () => {
                   onChange={(e) => setFilters({ ...filters, employee: e.target.value })}
                 >
                   <option value="">All Employees</option>
-                  {employees.map(emp => (
-                    <option key={emp._id} value={emp._id}>{emp.name}</option>
-                  ))}
+                  {employees
+                    .filter(emp => !filters.department || emp.department?._id === filters.department)
+                    .map(emp => (
+                      <option key={emp._id} value={emp._id}>{emp.name}</option>
+                    ))}
                 </select>
                 <input
                   type="date"

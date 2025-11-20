@@ -14,7 +14,23 @@ router.get('/', auth, async (req, res) => {
     if (req.user.role === 'employee') {
       query.employee = req.user.userId;
     } else {
-      if (employee) query.employee = employee;
+      // For admin, apply filters
+      if (employee) {
+        query.employee = employee;
+      } else if (department) {
+        // If department is selected but no specific employee, find all employees in that department
+        const User = require('../models/User');
+        const employeesInDept = await User.find({ department: department, role: 'employee' }).select('_id');
+        const employeeIds = employeesInDept.map(emp => emp._id);
+        
+        if (employeeIds.length === 0) {
+          // No employees in this department, return empty array
+          return res.json([]);
+        }
+        
+        query.employee = { $in: employeeIds };
+      }
+      
       if (startDate || endDate) {
         query.date = {};
         if (startDate) query.date.$gte = new Date(startDate);
@@ -23,13 +39,16 @@ router.get('/', auth, async (req, res) => {
     }
 
     let tasks = await Task.find(query)
-      .populate('employee', 'name email department')
+      .populate({
+        path: 'employee',
+        select: 'name email department',
+        populate: {
+          path: 'department',
+          select: 'name'
+        }
+      })
       .populate('project', 'name')
       .sort({ date: -1 });
-
-    if (department && req.user.role === 'admin') {
-      tasks = tasks.filter(task => task.employee.department?.toString() === department);
-    }
 
     res.json(tasks);
   } catch (error) {
@@ -152,8 +171,37 @@ router.get('/export/excel', auth, async (req, res) => {
     if (req.user.role === 'employee') {
       query.employee = req.user.userId;
     } else {
-      // Admins can filter by employee
-      if (employee) query.employee = employee;
+      // For admin, apply filters
+      if (employee) {
+        query.employee = employee;
+      } else if (department) {
+        // If department is selected but no specific employee, find all employees in that department
+        const User = require('../models/User');
+        const employeesInDept = await User.find({ department: department, role: 'employee' }).select('_id');
+        const employeeIds = employeesInDept.map(emp => emp._id);
+        
+        if (employeeIds.length === 0) {
+          // No employees in this department, create empty Excel
+          const workbook = new ExcelJS.Workbook();
+          const worksheet = workbook.addWorksheet('Tasks');
+          worksheet.columns = [
+            { header: 'Date', key: 'date', width: 15 },
+            { header: 'Employee', key: 'employee', width: 20 },
+            { header: 'Task Title', key: 'title', width: 30 },
+            { header: 'Description', key: 'description', width: 40 },
+            { header: 'Project', key: 'project', width: 20 },
+            { header: 'Status', key: 'status', width: 15 },
+            { header: 'Remark', key: 'remark', width: 30 }
+          ];
+          
+          res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+          res.setHeader('Content-Disposition', 'attachment; filename=tasks.xlsx');
+          await workbook.xlsx.write(res);
+          return res.end();
+        }
+        
+        query.employee = { $in: employeeIds };
+      }
     }
 
     if (startDate || endDate) {
@@ -167,13 +215,16 @@ router.get('/export/excel', auth, async (req, res) => {
     }
 
     let tasks = await Task.find(query)
-      .populate('employee', 'name email department')
+      .populate({
+        path: 'employee',
+        select: 'name email department',
+        populate: {
+          path: 'department',
+          select: 'name'
+        }
+      })
       .populate('project', 'name')
       .sort({ date: -1 });
-
-    if (department && req.user.role === 'admin') {
-      tasks = tasks.filter(task => task.employee.department?.toString() === department);
-    }
 
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Tasks');
