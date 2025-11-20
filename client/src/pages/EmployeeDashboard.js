@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, LogOut, Download, Filter, TrendingUp, CheckCircle, Clock, AlertCircle, Calendar, FileText, ExternalLink, X } from 'lucide-react';
 import axios from '../config/axios';
 import ProjectDetails from '../components/ProjectDetails';
-import { formatDate, formatDateTime } from '../utils/dateUtils';
+import { formatDate } from '../utils/dateUtils';
 import '../styles/Dashboard.css';
 
 const EmployeeDashboard = () => {
@@ -646,97 +646,7 @@ const EmployeeDashboard = () => {
   );
 };
 
-const TaskCard = ({ task, onUpdate, onDelete, isGrouped }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [status, setStatus] = useState(task.status);
-  const [remark, setRemark] = useState(task.remark || '');
 
-  // Reset local state when task prop changes
-  useEffect(() => {
-    setStatus(task.status);
-    setRemark(task.remark || '');
-  }, [task.status, task.remark]);
-
-  const handleSave = () => {
-    console.log('TaskCard handleSave called with:', { status, remark });
-    console.log('Remark details:', `"${remark}"`, 'Length:', remark.length, 'Type:', typeof remark);
-    onUpdate(task._id, status, remark);
-    setIsEditing(false);
-  };
-
-  const handleCancel = () => {
-    // Reset to original values
-    setStatus(task.status);
-    setRemark(task.remark || '');
-    setIsEditing(false);
-  };
-
-  const handleDelete = () => {
-    if (window.confirm('Are you sure you want to delete this task? This action cannot be undone.')) {
-      onDelete(task._id);
-    }
-  };
-
-  const statusColors = {
-    pending: '#fbbf24',
-    'in-progress': '#3b82f6',
-    completed: '#10b981',
-    blocked: '#ef4444'
-  };
-
-  const formatTaskDate = (date) => {
-    return formatDate(date);
-  };
-
-  return (
-    <div className={`task-card ${task.status} ${isGrouped ? 'grouped-task' : ''}`}>
-      <div className="task-header">
-        <h3>{task.title}</h3>
-        <span className="status-badge" style={{ background: statusColors[task.status] }}>
-          {task.status}
-        </span>
-      </div>
-      <p className="task-date">
-        <Calendar size={14} /> {formatTaskDate(task.date)}
-      </p>
-      <p className="task-description">{task.description}</p>
-      <p className="task-project">Project: {task.project?.name}</p>
-      
-      {isEditing ? (
-        <div className="task-edit">
-          <select value={status} onChange={(e) => setStatus(e.target.value)}>
-            <option value="pending">Pending</option>
-            <option value="in-progress">In Progress</option>
-            <option value="completed">Completed</option>
-            <option value="blocked">Blocked</option>
-          </select>
-          <textarea
-            placeholder="Add remark..."
-            value={remark}
-            onChange={(e) => setRemark(e.target.value)}
-            rows="2"
-          />
-          <div className="task-actions">
-            <button onClick={handleCancel} className="cancel-btn">Cancel</button>
-            <button onClick={handleSave} className="save-btn">Save</button>
-          </div>
-        </div>
-      ) : (
-        <>
-          {task.remark && <p className="task-remark">Remark: {task.remark}</p>}
-          <div className="task-actions">
-            <button onClick={() => setIsEditing(true)} className="update-btn">
-              Update Status
-            </button>
-            <button onClick={handleDelete} className="delete-btn">
-              Delete
-            </button>
-          </div>
-        </>
-      )}
-    </div>
-  );
-};
 
 // Compact Task Group Component
 const CompactTaskGroup = ({ taskGroup, onUpdate, onDelete }) => {
