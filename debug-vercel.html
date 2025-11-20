@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vercel Debug</title>
+</head>
+<body>
+    <h1>Vercel Debug Page</h1>
+    <div id="debug-info"></div>
+    
+    <script>
+        console.log('Debug script loaded');
+        
+        // Check if React app files are accessible
+        fetch('/static/js/main.js')
+            .then(response => {
+                console.log('Main JS file status:', response.status);
+                document.getElementById('debug-info').innerHTML += `<p>Main JS: ${response.status}</p>`;
+            })
+            .catch(error => {
+                console.error('Main JS error:', error);
+                document.getElementById('debug-info').innerHTML += `<p>Main JS Error: ${error.message}</p>`;
+            });
+            
+        // Check if index.html is accessible
+        fetch('/')
+            .then(response => response.text())
+            .then(html => {
+                console.log('Index HTML loaded, length:', html.length);
+                document.getElementById('debug-info').innerHTML += `<p>Index HTML length: ${html.length}</p>`;
+                
+                // Check if React root div exists
+                if (html.includes('id="root"')) {
+                    document.getElementById('debug-info').innerHTML += `<p>✅ Root div found</p>`;
+                } else {
+                    document.getElementById('debug-info').innerHTML += `<p>❌ Root div NOT found</p>`;
+                }
+            })
+            .catch(error => {
+                console.error('Index HTML error:', error);
+                document.getElementById('debug-info').innerHTML += `<p>Index HTML Error: ${error.message}</p>`;
+            });
+    </script>
+</body>
+</html>
