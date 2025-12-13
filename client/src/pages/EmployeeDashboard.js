@@ -1,9 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Plus, LogOut, Download, Filter, TrendingUp, CheckCircle, Clock, AlertCircle, Calendar, FileText, ExternalLink, X } from 'lucide-react';
+import { Plus, LogOut, Download, Filter, TrendingUp, CheckCircle, Clock, AlertCircle, Calendar, FileText, ExternalLink, X, Settings } from 'lucide-react';
+import { getSmallAvatarUrl } from '../utils/avatarUtils';
 import axios from '../config/axios';
 import ProjectDetails from '../components/ProjectDetails';
+import EmployeeTable from '../components/EmployeeTable';
+import PersonalEmployeeTable from '../components/PersonalEmployeeTable';
+import ProfileSettings from '../components/ProfileSettings';
 import { formatDate } from '../utils/dateUtils';
 import '../styles/Dashboard.css';
 
@@ -14,6 +18,7 @@ const EmployeeDashboard = () => {
   const [tasks, setTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
   const [projects, setProjects] = useState([]);
+  const [employees, setEmployees] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showFilterModal, setShowFilterModal] = useState(false);
@@ -22,9 +27,11 @@ const EmployeeDashboard = () => {
     status: 'all',
     startDate: '',
     endDate: '',
-    project: 'all'
+    project: 'all',
+    employee: 'all'
   });
   const [currentWeek, setCurrentWeek] = useState(0); // 0 = current week, 1 = previous week, etc.
+  const [showProfileSettings, setShowProfileSettings] = useState(false);
 
   const fetchTasks = async () => {
     try {
@@ -41,6 +48,15 @@ const EmployeeDashboard = () => {
       setProjects(res.data);
     } catch (err) {
       console.error('Failed to fetch projects');
+    }
+  };
+
+  const fetchEmployees = async () => {
+    try {
+      const res = await axios.get('/api/users');
+      setEmployees(res.data);
+    } catch (err) {
+      console.error('Failed to fetch employees');
     }
   };
 
@@ -79,6 +95,11 @@ const EmployeeDashboard = () => {
       filtered = filtered.filter(task => task.project?._id === filters.project);
     }
 
+    // Employee filter
+    if (filters.employee !== 'all') {
+      filtered = filtered.filter(task => task.employee?._id === filters.employee);
+    }
+
     // Additional date range filter (if specified)
     if (filters.startDate) {
       filtered = filtered.filter(task => new Date(task.date) >= new Date(filters.startDate));
@@ -95,6 +116,7 @@ const EmployeeDashboard = () => {
   useEffect(() => {
     fetchTasks();
     fetchProjects();
+    fetchEmployees();
   }, []);
 
   useEffect(() => {
@@ -189,7 +211,8 @@ const EmployeeDashboard = () => {
       status: 'all',
       startDate: '',
       endDate: '',
-      project: 'all'
+      project: 'all',
+      employee: 'all'
     });
   };
 
@@ -228,7 +251,17 @@ const EmployeeDashboard = () => {
       <nav className="navbar">
         <h1>Employee Dashboard</h1>
         <div className="nav-right">
-          <span>Welcome, {user?.name}</span>
+          <div className="user-info">
+            <img 
+              src={getSmallAvatarUrl(user?.avatar, user?.name)} 
+              alt="Profile" 
+              className="user-avatar"
+            />
+            <span>Welcome, {user?.name}</span>
+          </div>
+          <button onClick={() => setShowProfileSettings(true)} className="profile-btn">
+            <Settings size={18} /> Profile
+          </button>
           <button onClick={handleLogout} className="logout-btn">
             <LogOut size={18} /> Logout
           </button>
@@ -248,326 +281,79 @@ const EmployeeDashboard = () => {
         >
           Projects
         </button>
+        <button 
+          className={activeTab === 'employees' ? 'active' : ''} 
+          onClick={() => setActiveTab('employees')}
+        >
+          Employees
+        </button>
       </div>
 
       <div className="dashboard-content">
         {activeTab === 'tasks' && (
-          <>
-        {/* Statistics Cards */}
-        <div className="stats-grid">
-          <div className="stat-card stat-today">
-            <div className="stat-icon">
-              <Calendar size={24} />
-            </div>
-            <div className="stat-info">
-              <h3>{todayTasks.length}</h3>
-              <p>Tasks Created Today</p>
-            </div>
-          </div>
-
-          <div className="stat-card stat-total">
-            <div className="stat-icon">
-              <TrendingUp size={24} />
-            </div>
-            <div className="stat-info">
-              <h3>{tasks.length}</h3>
-              <p>Total Tasks</p>
-            </div>
-          </div>
-
-          <div className="stat-card stat-completed">
-            <div className="stat-icon">
-              <CheckCircle size={24} />
-            </div>
-            <div className="stat-info">
-              <h3>{completedTasks.length}</h3>
-              <p>Completed Tasks</p>
-            </div>
-          </div>
-
-          <div className="stat-card stat-pending">
-            <div className="stat-icon">
-              <AlertCircle size={24} />
-            </div>
-            <div className="stat-info">
-              <h3>{pendingTasks.length}</h3>
-              <p>Pending Tasks</p>
-            </div>
-          </div>
-
-          <div className="stat-card stat-progress">
-            <div className="stat-icon">
-              <Clock size={24} />
-            </div>
-            <div className="stat-info">
-              <h3>{inProgressTasks.length}</h3>
-              <p>In Progress</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="header-section">
-          <h2>My Tasks ({filteredTasks.length})</h2>
-          <div className="action-buttons">
-            <button onClick={() => setShowFilterModal(true)} className="filter-btn">
-              <Filter size={18} /> Filter
-            </button>
-            <button onClick={handleDownloadExcel} className="download-btn">
-              <Download size={18} /> Download Excel
-            </button>
-            <button onClick={() => setShowModal(true)} className="add-btn">
-              <Plus size={18} /> Add Task
-            </button>
-          </div>
-        </div>
-
-        {/* Active Filters Display */}
-        {(filters.status !== 'all' || filters.project !== 'all' || filters.startDate || filters.endDate) && (
-          <div className="active-filters">
-            <span className="filter-label">Active Filters:</span>
-            {filters.status !== 'all' && <span className="filter-tag">Status: {filters.status}</span>}
-            {filters.project !== 'all' && <span className="filter-tag">Project: {projects.find(p => p._id === filters.project)?.name}</span>}
-            {filters.startDate && <span className="filter-tag">From: {filters.startDate}</span>}
-            {filters.endDate && <span className="filter-tag">To: {filters.endDate}</span>}
-            <button onClick={resetFilters} className="clear-filters-btn">Clear All</button>
-          </div>
-        )}
-
-        {/* Weekly Navigation */}
-        <div className="week-navigation">
-          <div className="week-info">
-            <h3>{getWeekLabel()}</h3>
-            <span className="week-range">
-              {(() => {
-                const { startOfWeek, endOfWeek } = getWeekRange(currentWeek);
-                return `${formatDate(startOfWeek)} - ${formatDate(endOfWeek)}`;
-              })()}
-            </span>
-          </div>
-          <div className="week-controls">
-            <button 
-              onClick={goToPreviousWeek} 
-              className="week-nav-btn"
-              title="Previous week"
-            >
-              ← Previous
-            </button>
-            {currentWeek > 0 && (
-              <button 
-                onClick={goToCurrentWeek} 
-                className="current-week-btn"
-                title="Go to current week"
-              >
-                Current Week
-              </button>
-            )}
-            <button 
-              onClick={goToNextWeek} 
-              className="week-nav-btn"
-              disabled={currentWeek === 0}
-              title="Next week"
-            >
-              Next →
-            </button>
-          </div>
-        </div>
-
-        {/* Compact Tasks Grid */}
-        <div className="compact-tasks-grid">
-          {filteredTasks.length === 0 ? (
-            <div className="no-tasks-message">
-              <h3>No tasks found for {getWeekLabel().toLowerCase()}</h3>
-              <p>
-                {currentWeek === 0 
-                  ? 'Click "Add Task" to create your first task this week.' 
-                  : 'No tasks were created during this week.'
-                }
-              </p>
-              {currentWeek === 0 && (
-                <button onClick={() => setShowModal(true)} className="add-task-cta">
-                  Add Your First Task
-                </button>
-              )}
-            </div>
-          ) : (
-            (() => {
-              // Group tasks by submission group and date
-              const groupedTasks = {};
-              filteredTasks.forEach(task => {
-                const groupKey = task.submissionGroup || task._id;
-                if (!groupedTasks[groupKey]) {
-                  groupedTasks[groupKey] = [];
-                }
-                groupedTasks[groupKey].push(task);
-              });
-
-              return Object.values(groupedTasks).map((taskGroup, groupIndex) => (
-                <CompactTaskGroup 
-                  key={groupIndex}
-                  taskGroup={taskGroup}
-                  onUpdate={handleUpdateTask}
-                  onDelete={handleDeleteTask}
-                />
-              ));
-            })()
-          )}
-        </div>
-
-      {/* Add Task Modal */}
-      {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal multiple-tasks-modal" onClick={(e) => e.stopPropagation()}>
-            <h2>Add New Tasks</h2>
-            <form onSubmit={handleAddTask}>
-              <div className="tasks-container">
-                {newTasks.map((task, index) => (
-                  <div key={index} className="task-row">
-                    <div className="task-row-header">
-                      <h4>Task {index + 1}</h4>
-                      {newTasks.length > 1 && (
-                        <button 
-                          type="button" 
-                          onClick={() => handleRemoveTaskRow(index)}
-                          className="remove-task-btn"
-                          title="Remove this task"
-                        >
-                          <X size={16} />
-                        </button>
-                      )}
-                    </div>
-                    
-                    <div className="task-fields">
-                      <div className="field-group">
-                        <label>Project *</label>
-                        <select
-                          value={task.project}
-                          onChange={(e) => handleTaskChange(index, 'project', e.target.value)}
-                          required
-                          className="project-select"
-                        >
-                          <option value="">Select Project</option>
-                          {projects.map(project => (
-                            <option key={project._id} value={project._id}>{project.name}</option>
-                          ))}
-                        </select>
-                      </div>
-                      
-                      <div className="field-group">
-                        <label>Task Title *</label>
-                        <input
-                          type="text"
-                          placeholder="Enter task title"
-                          value={task.title}
-                          onChange={(e) => handleTaskChange(index, 'title', e.target.value)}
-                          required
-                          className="task-title-input"
-                        />
-                      </div>
-                      
-                      <div className="field-group">
-                        <label>Description (Optional)</label>
-                        <textarea
-                          placeholder="Enter task description"
-                          value={task.description}
-                          onChange={(e) => handleTaskChange(index, 'description', e.target.value)}
-                          rows="2"
-                          className="task-description-input"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
+          <div>
+            <div className="header-section" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h2>My Personal Dashboard</h2>
               </div>
-              
-              <button 
-                type="button" 
-                onClick={handleAddNewTaskRow}
-                className="add-task-row-btn"
-              >
-                <Plus size={16} /> Add Another Task
-              </button>
-              
-              <div className="modal-actions">
-                <button type="button" onClick={() => {
-                  setShowModal(false);
-                  setNewTasks([{ title: '', description: '', project: '' }]);
-                }} className="cancel-btn">
-                  Cancel
-                </button>
-                <button type="submit" className="submit-btn">
-                  Add {newTasks.filter(t => t.title.trim() && t.project).length} Task{newTasks.filter(t => t.title.trim() && t.project).length !== 1 ? 's' : ''}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Filter Modal */}
-      {showFilterModal && (
-        <div className="modal-overlay" onClick={() => setShowFilterModal(false)}>
-          <div className="modal filter-modal" onClick={(e) => e.stopPropagation()}>
-            <h2>Filter Tasks</h2>
-            <div className="filter-form">
-              <div className="form-group">
-                <label>Status</label>
-                <select
-                  value={filters.status}
-                  onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <select 
+                  id="monthFilter"
+                  style={{
+                    padding: '8px 12px',
+                    border: '1px solid #ccc',
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    cursor: 'pointer'
+                  }}
+                  onChange={(e) => {
+                    const event = new CustomEvent('monthFilterChanged', { 
+                      detail: { month: e.target.value } 
+                    });
+                    window.dispatchEvent(event);
+                  }}
                 >
-                  <option value="all">All Status</option>
-                  <option value="pending">Pending</option>
-                  <option value="in-progress">In Progress</option>
-                  <option value="completed">Completed</option>
-                  <option value="blocked">Blocked</option>
+                  <option value="">All Months</option>
+                  <option value="01">January</option>
+                  <option value="02">February</option>
+                  <option value="03">March</option>
+                  <option value="04">April</option>
+                  <option value="05">May</option>
+                  <option value="06">June</option>
+                  <option value="07">July</option>
+                  <option value="08">August</option>
+                  <option value="09">September</option>
+                  <option value="10">October</option>
+                  <option value="11">November</option>
+                  <option value="12">December</option>
                 </select>
-              </div>
-
-              <div className="form-group">
-                <label>Project</label>
-                <select
-                  value={filters.project}
-                  onChange={(e) => setFilters({ ...filters, project: e.target.value })}
+                <button
+                  onClick={() => {
+                    const event = new CustomEvent('downloadExcel');
+                    window.dispatchEvent(event);
+                  }}
+                  style={{
+                    padding: '8px 16px',
+                    background: '#28a745',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                  title="Download Tasks as Excel"
                 >
-                  <option value="all">All Projects</option>
-                  {projects.map(project => (
-                    <option key={project._id} value={project._id}>{project.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label>Start Date</label>
-                <input
-                  type="date"
-                  value={filters.startDate}
-                  onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>End Date</label>
-                <input
-                  type="date"
-                  value={filters.endDate}
-                  onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
-                />
-              </div>
-
-              <div className="modal-actions">
-                <button type="button" onClick={resetFilters} className="reset-btn">
-                  Reset Filters
-                </button>
-                <button type="button" onClick={() => setShowFilterModal(false)} className="submit-btn">
-                  Apply Filters
+                  📊 Download Excel
                 </button>
               </div>
             </div>
+            <div className="personal-table-container">
+              <PersonalEmployeeTable />
+            </div>
           </div>
-        </div>
-      )}
-          </>
         )}
 
         {/* Projects Tab */}
@@ -631,6 +417,20 @@ const EmployeeDashboard = () => {
             </div>
           </div>
         )}
+
+        {/* Employees Tab */}
+        {activeTab === 'employees' && (
+          <div>
+            <div className="header-section">
+              <h2>
+                Employee Hierarchy - {user?.department?.name || user?.department || 'Your Department'}
+              </h2>
+            </div>
+            <div className="employee-table-container">
+              <EmployeeTable />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Project Details Modal */}
@@ -642,6 +442,16 @@ const EmployeeDashboard = () => {
           userRole="employee"
         />
       )}
+
+      {/* Profile Settings Modal */}
+      <ProfileSettings
+        isOpen={showProfileSettings}
+        onClose={() => setShowProfileSettings(false)}
+        onProfileUpdate={(updatedUser) => {
+          console.log('Profile updated, user data:', updatedUser);
+          // The EmployeeTable will automatically refresh due to useAuth context update
+        }}
+      />
     </div>
   );
 };

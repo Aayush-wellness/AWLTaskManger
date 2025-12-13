@@ -93,3 +93,7 @@ Desktop.ini
 migrate-data.js
 simple-migrate.js
 test-connection.js
+
+# Uploaded files (avatars, documents, etc.)
+uploads/
+*/uploads/
