@@ -23,9 +23,41 @@
   gap: 20px;
 }
 
-.nav-right span {
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e5e7eb;
+}
+
+.user-info span {
   color: #666;
   font-weight: 500;
+}
+
+.profile-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.3s;
+}
+
+.profile-btn:hover {
+  background: #2563eb;
 }
 
 .logout-btn {
@@ -2663,7 +2695,7 @@
 
 .modern-expand-btn.expanded:hover .expand-icon {
   transform: rotate(180deg) scale(1.1);
-}/
+}
 * Professional Admin Card Styling */
 .info-card {
   position: relative;
@@ -4213,8 +4245,8 @@ mple Basic Card Design - Override Complex Styling */
   border-color: #3b82f6 !important;
   transform: none !important;
   box-shadow: none !important;
-}/* Basic N
-o Tasks Message */
+}
+
 .no-tasks-message {
   grid-column: 1 / -1 !important;
   text-align: center !important;
@@ -4323,8 +4355,9 @@ o Tasks Message */
   background: #2563eb !important;
   transform: none !important;
   box-shadow: none !important;
-}/* Comp
-lete Override for Admin Cards - Remove All Hover Effects */
+}
+
+/* Complete Override for Admin Cards - Remove All Hover Effects */
 
 /* Remove all project card hover effects */
 .project-card-clickable {
@@ -4670,4 +4703,159 @@ lete Override for Admin Cards - Remove All Hover Effects */
 .add-btn:active {
   transform: none !important;
   box-shadow: none !important;
+}
+* Employee Table Styles */
+.employee-table-container {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin-top: 20px;
+}
+
+.employee-table-container .MuiTableContainer-root {
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.employee-table-container .MuiTable-root {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.employee-table-container .MuiTableHead-root {
+  background: #f8fafc;
+}
+
+.employee-table-container .MuiTableCell-head {
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.employee-table-container .MuiTableRow-root:hover {
+  background: #f9fafb;
+}
+
+.employee-table-container .MuiIconButton-root {
+  color: #667eea;
+}
+
+.employee-table-container .MuiIconButton-root:hover {
+  background: rgba(102, 126, 234, 0.1);
+}
+/* C
+OMPLETE HOVER EFFECTS REMOVAL - NO SHADOWS OR TRANSFORMS */
+.task-card:hover,
+.stat-card:hover,
+.stat-card.clickable:hover,
+.project-card-clickable:hover,
+.info-card:hover,
+.compact-task-card:hover,
+.compact-task-group:hover,
+.delete-card-btn:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  background: inherit !important;
+  border-color: inherit !important;
+}
+
+/* Remove all pseudo-element hover effects */
+.task-card:hover::before,
+.task-card:hover::after,
+.stat-card:hover::before,
+.stat-card:hover::after,
+.stat-card.clickable:hover::before,
+.stat-card.clickable:hover::after,
+.project-card-clickable:hover::before,
+.project-card-clickable:hover::after,
+.info-card:hover::before,
+.info-card:hover::after,
+.compact-task-card:hover::before,
+.compact-task-card:hover::after,
+.compact-task-group:hover::before,
+.compact-task-group:hover::after,
+.delete-card-btn:hover::before,
+.delete-card-btn:hover::after {
+  display: none !important;
+  opacity: 0 !important;
+  content: none !important;
+}
+
+/* Remove all card hover transitions */
+.task-card,
+.stat-card,
+.stat-card.clickable,
+.project-card-clickable,
+.info-card,
+.compact-task-card,
+.compact-task-group,
+.delete-card-btn {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* MUI SVG Icon Styling - Material React Table Expand Icons */
+.MuiSvgIcon-root.MuiSvgIcon-fontSizeMedium {
+  color: black !important;
+  font-size: 1.2rem !important;
+}
+
+/* Remove any hover effects on MUI SVG icons */
+.MuiSvgIcon-root.MuiSvgIcon-fontSizeMedium:hover {
+  color: black !important;
+  background: transparent !important;
+  transform: none !important;
+}
+
+/* Style the expand/collapse icons specifically */
+.employee-table-container .MuiSvgIcon-root {
+  color: black !important;
+  transition: none !important;
+}
+
+.employee-table-container .MuiSvgIcon-root:hover {
+  color: black !important;
+  background: transparent !important;
+}
+
+/* Personal Table Styles */
+.personal-table-container {
+  margin-top: 20px;
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.personal-table-container .MuiTableContainer-root {
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.personal-table-container .MuiTable-root {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.personal-table-container .MuiTableHead-root {
+  background: #f8fafc;
+}
+
+.personal-table-container .MuiTableCell-head {
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.personal-table-container .MuiTableRow-root:hover {
+  background: #f9fafb;
+}
+
+.personal-table-container .MuiIconButton-root {
+  color: #667eea;
+}
+
+.personal-table-container .MuiIconButton-root:hover {
+  background: rgba(102, 126, 234, 0.1);
 }

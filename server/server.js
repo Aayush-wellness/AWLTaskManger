@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const path = require('path');
 
 dotenv.config();
 
@@ -10,6 +11,9 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Serve static files for uploads
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 // Database connection
 mongoose.connect(process.env.MONGODB_URI)
@@ -104,7 +108,7 @@ app.use('/api/tasks', require('./routes/tasks'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/project-vendors', require('./routes/projectVendors'));
 
-// Error handling middleware
+// Error handling middleware 
 app.use((err, req, res, next) => {
   console.error('Error:', err);
   res.status(500).json({ 

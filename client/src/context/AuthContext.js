@@ -64,6 +64,30 @@ export const AuthProvider = ({ children }) => {
     setUser(userData);
   };
 
+  const updateUser = (userData) => {
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
+  };
+
+  const refreshUser = async () => {
+    try {
+      console.log('Refreshing user data from backend...');
+      const response = await axios.get('/api/auth/me');
+      const userData = response.data;
+      console.log('Refreshed user data:', userData);
+      localStorage.setItem('user', JSON.stringify(userData));
+      setUser(userData);
+      return userData;
+    } catch (error) {
+      console.error('Error refreshing user data:', error);
+      // If refresh fails due to auth issues, logout
+      if (error.response?.status === 401) {
+        logout();
+      }
+      throw error;
+    }
+  };
+
   if (loading) {
     return (
       <div style={{
@@ -100,7 +124,7 @@ export const AuthProvider = ({ children }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, logout, updateUser, refreshUser, loading }}>
       {children}
     </AuthContext.Provider>
   );

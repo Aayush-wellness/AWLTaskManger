@@ -22,7 +22,30 @@ const userSchema = new mongoose.Schema({
   department: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Department'
-  }
+  },
+  phone: {
+    type: String
+  },
+  address: {
+    type: String
+  },
+  jobTitle: {
+    type: String
+  },
+  startDate: {
+    type: Date
+  },
+  avatar: {
+    type: String
+  },
+  tasks: [{
+    id: String,
+    taskName: String,
+    project: String,
+    startDate: Date,
+    endDate: Date,
+    remark: String
+  }]
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

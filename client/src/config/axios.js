@@ -3,7 +3,7 @@ import axios from 'axios';
 // Configure axios defaults
 const baseURL = process.env.NODE_ENV === 'production' 
   ? process.env.REACT_APP_API_URL || window.location.origin
-  : 'http://localhost:5004';
+  : 'http://localhost:5002';
 
 axios.defaults.baseURL = baseURL;
 

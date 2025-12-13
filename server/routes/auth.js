@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
+const { auth } = require('../middleware/auth');
 
 // Register
 router.post('/register', [
@@ -43,7 +44,23 @@ router.post('/register', [
       { expiresIn: '90d' }
     );
 
-    res.status(201).json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
+    // Return complete user profile data
+    const userProfile = await User.findById(user._id).select('-password').populate('department');
+    res.status(201).json({ 
+      token, 
+      user: {
+        id: userProfile._id,
+        name: userProfile.name,
+        email: userProfile.email,
+        role: userProfile.role,
+        department: userProfile.department,
+        phone: userProfile.phone,
+        address: userProfile.address,
+        jobTitle: userProfile.jobTitle,
+        startDate: userProfile.startDate,
+        avatar: userProfile.avatar
+      }
+    });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
@@ -85,7 +102,12 @@ router.post('/login', [
         name: user.name, 
         email: user.email, 
         role: user.role,
-        department: user.department 
+        department: user.department,
+        phone: user.phone,
+        address: user.address,
+        jobTitle: user.jobTitle,
+        startDate: user.startDate,
+        avatar: user.avatar
       } 
     });
   } catch (error) {
@@ -121,6 +143,32 @@ router.post('/reset-password', [
     await user.save();
 
     res.json({ message: 'Password reset successful! You can now login with your new password.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Get current user profile
+router.get('/me', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId).select('-password').populate('department');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      department: user.department,
+      phone: user.phone,
+      address: user.address,
+      jobTitle: user.jobTitle,
+      startDate: user.startDate,
+      avatar: user.avatar,
+      tasks: user.tasks || []
+    });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
