@@ -156,10 +156,10 @@ router.post('/create-employee', auth, async (req, res) => {
 router.post('/add-task', auth, async (req, res) => {
   try {
     const userId = req.user.userId;
-    const { taskName, project, startDate, endDate, remark } = req.body;
+    const { taskName, project, startDate, endDate, remark, status } = req.body;
     
     console.log('Adding task for user:', userId);
-    console.log('Task data:', { taskName, project, startDate, endDate, remark });
+    console.log('Task data:', { taskName, project, startDate, endDate, remark, status });
     
     const user = await User.findById(userId);
     if (!user) {
@@ -178,7 +178,8 @@ router.post('/add-task', auth, async (req, res) => {
       project,
       startDate: startDate || new Date(),
       endDate: endDate || null,
-      remark: remark || ''
+      remark: remark || '',
+      status: status || 'pending'
     };
     
     // Add task to user's tasks array
@@ -203,9 +204,10 @@ router.put('/update-task/:taskId', auth, async (req, res) => {
   try {
     const userId = req.user.userId;
     const { taskId } = req.params;
-    const { taskName, project, startDate, endDate, remark } = req.body;
-    
+    const { taskName, project, AssignedBy, startDate, endDate, remark, status } = req.body;
+
     console.log('Updating task:', taskId, 'for user:', userId);
+    console.log('Request body:', { taskName, project, AssignedBy, startDate, endDate, remark, status });
     
     const user = await User.findById(userId);
     if (!user) {
@@ -213,24 +215,33 @@ router.put('/update-task/:taskId', auth, async (req, res) => {
     }
     
     // Find and update the task
-    const taskIndex = user.tasks.findIndex(task => task.id === taskId);
+    const taskIndex = user.tasks.findIndex(task => task.id === taskId || task._id?.toString() === taskId);
+
     if (taskIndex === -1) {
       return res.status(404).json({ message: 'Task not found' });
     }
+    
+  
+
+    
     
     // Update task data
     user.tasks[taskIndex] = {
       ...user.tasks[taskIndex],
       taskName: taskName || user.tasks[taskIndex].taskName,
       project: project || user.tasks[taskIndex].project,
+      AssignedBy: AssignedBy || user.tasks[taskIndex].AssignedBy,
       startDate: startDate || user.tasks[taskIndex].startDate,
       endDate: endDate || user.tasks[taskIndex].endDate,
-      remark: remark || user.tasks[taskIndex].remark
+      remark: remark || user.tasks[taskIndex].remark,
+      status: status || user.tasks[taskIndex].status
     };
     
     await user.save();
     
     console.log('Task updated successfully:', user.tasks[taskIndex]);
+    
+ 
     
     res.json({
       message: 'Task updated successfully',
@@ -257,7 +268,7 @@ router.delete('/delete-task/:taskId', auth, async (req, res) => {
     }
     
     // Find and remove the task
-    const taskIndex = user.tasks.findIndex(task => task.id === taskId);
+    const taskIndex = user.tasks.findIndex(task => task.id === taskId || task._id.toString() === taskId);
     if (taskIndex === -1) {
       return res.status(404).json({ message: 'Task not found' });
     }
@@ -301,6 +312,50 @@ router.put('/test-update', auth, async (req, res) => {
     res.json({ message: 'Test update successful', user: { name: user.name } });
   } catch (error) {
     console.error('Test update error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Create new task (including tasks array)
+router.put('/:userId', auth, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { tasks, name, email, phone, address, jobTitle, startDate } = req.body;
+
+    console.log('Updating user:', userId);
+    console.log('Update data:', { tasks, name, email, phone, address, jobTitle, startDate });
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Check if tasks are being updated
+    if (tasks !== undefined) {
+      user.tasks = tasks;
+      // NOTE: Notification creation is handled by frontend calling /api/notifications/create
+      // This prevents duplicate notifications
+    }
+
+    // Update other fields if provided
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (phone) user.phone = phone;
+    if (address) user.address = address;
+    if (jobTitle) user.jobTitle = jobTitle;
+    if (startDate) user.startDate = startDate;
+
+    await user.save();
+
+    console.log('User updated successfully');
+
+    const updatedUser = await User.findById(userId).select('-password').populate('department');
+    res.json({
+      message: 'User updated successfully',
+      user: updatedUser
+    });
+  } catch (error) {
+    console.error('Error updating user:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });

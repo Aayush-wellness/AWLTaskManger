@@ -107,6 +107,7 @@ app.use('/api/projects', require('./routes/projects'));
 app.use('/api/tasks', require('./routes/tasks'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/project-vendors', require('./routes/projectVendors'));
+app.use('/api/notifications' , require('./routes/notificationRoutes'));
 
 // Error handling middleware 
 app.use((err, req, res, next) => {

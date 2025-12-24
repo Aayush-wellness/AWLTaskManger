@@ -1,15 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Plus, LogOut, Download, Filter, TrendingUp, CheckCircle, Clock, AlertCircle, Calendar, FileText, ExternalLink, X, Settings } from 'lucide-react';
+import { LogOut, Calendar, FileText, ExternalLink, Settings } from 'lucide-react';
 import { getSmallAvatarUrl } from '../utils/avatarUtils';
 import axios from '../config/axios';
 import ProjectDetails from '../components/ProjectDetails';
-import EmployeeTable from '../components/EmployeeTable';
-import PersonalEmployeeTable from '../components/PersonalEmployeeTable';
+import EmployeeTable from '../components/EmployeeTable/EmployeeTable';
+import PersonalEmployeeTable from '../components/PersonalEmployeeTable/index';
 import ProfileSettings from '../components/ProfileSettings';
+import NotificationBell from '../components/NotificationBell';
 import { formatDate } from '../utils/dateUtils';
-import '../styles/Dashboard.css';
+import '../styles/EmployeeDashboard-Light.css';
 
 const EmployeeDashboard = () => {
   const { user, logout } = useAuth();
@@ -260,6 +261,7 @@ const EmployeeDashboard = () => {
             />
             <span>Welcome, {user?.name}</span>
           </div>
+          <NotificationBell />
           <button onClick={() => setShowProfileSettings(true)} className="profile-btn">
             <Settings size={18} /> Profile
           </button>

@@ -60,16 +60,16 @@ router.get('/', auth, async (req, res) => {
 router.post('/', auth, async (req, res) => {
   try {
     // Check if it's multiple tasks or single task
-    const { tasks, title, description, project } = req.body;
+    const { tasks, taskName, project, AssignedBy, startDate, endDate, remark } = req.body;
     
     let tasksToCreate = [];
     
     if (tasks && Array.isArray(tasks)) {
       // Multiple tasks submission
-      tasksToCreate = tasks.filter(task => task.title && task.project);
-    } else if (title && project) {
-      // Single task submission (backward compatibility)
-      tasksToCreate = [{ title, description, project }];
+      tasksToCreate = tasks.filter(task => task.taskName && task.project);
+    } else if (taskName && project) {
+      // Single task submission
+      tasksToCreate = [{ taskName, project, AssignedBy, startDate, endDate, remark }];
     }
     
     if (tasksToCreate.length === 0) {
@@ -84,9 +84,12 @@ router.post('/', auth, async (req, res) => {
     
     for (const taskData of tasksToCreate) {
       const task = new Task({
-        title: taskData.title,
-        description: taskData.description || '',
+        taskName: taskData.taskName,
         project: taskData.project,
+        AssignedBy: taskData.AssignedBy || '',
+        startDate: taskData.startDate || null,
+        endDate: taskData.endDate || null,
+        remark: taskData.remark || '',
         employee: req.user.userId,
         status: 'pending',
         submissionGroup
@@ -109,8 +112,13 @@ router.post('/', auth, async (req, res) => {
 
 // Update task status and remark
 router.put('/:id', auth, async (req, res) => {
+
   try {
-    const { status, remark } = req.body;
+    const { id, taskName, project, AssignedBy, startDate, endDate, status, remark } = req.body;
+    
+    console.log("update task id: ", id)
+    // console.log("assignedBy:: ", AssignedBy)
+    // console.log("task dataghjgjg",req.body);
     
     const task = await Task.findById(req.params.id);
     
@@ -119,13 +127,21 @@ router.put('/:id', auth, async (req, res) => {
     }
 
     if (req.user.role === 'employee' && task.employee.toString() !== req.user.userId) {
-      return res.status(403).json({ message: 'Not authorized' });
+      return res.status(403).json({ message: 'Not authorized to update this task' });
     }
 
-    task.status = status || task.status;
-    // Allow clearing remark by setting it to empty string
-    if (remark !== undefined) {
-      task.remark = remark;
+    // Update fields if provided
+    if (taskName !== undefined) task.taskName = taskName;
+    if (project !== undefined) task.project = project;
+    if (AssignedBy !== undefined) task.AssignedBy = AssignedBy;
+    if (startDate !== undefined) task.startDate = startDate;
+    if (endDate !== undefined) task.endDate = endDate;
+    if (status !== undefined) task.status = status;
+    if (remark !== undefined) task.remark = remark;
+
+    // Validate updated data
+    if (!task.taskName || !task.project) {
+        return res.status(400).json({ message: 'Task Name and Project are required fields.' });
     }
 
     await task.save();
@@ -134,6 +150,8 @@ router.put('/:id', auth, async (req, res) => {
       .populate('project', 'name');
 
     res.json(updatedTask);
+
+    console.log("updatedTask: ", updatedTask)
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

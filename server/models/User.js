@@ -42,9 +42,15 @@ const userSchema = new mongoose.Schema({
     id: String,
     taskName: String,
     project: String,
+    AssignedBy: String,
     startDate: Date,
     endDate: Date,
-    remark: String
+    remark: String,
+    status: {
+      type: String,
+      enum: ['pending', 'in-progress', 'completed', 'blocked'],
+      default: 'pending'
+    }
   }]
 }, { timestamps: true });
 

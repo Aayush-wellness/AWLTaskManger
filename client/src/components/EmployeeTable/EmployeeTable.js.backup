@@ -1,5 +1,5 @@
-import { useMemo, useState, useCallback, useEffect } from 'react';
-
+import { useMemo, useState, useCallback, useEffect, useContext } from 'react';
+// import { useAuth  } from '../context/AuthContext';
 //MRT Imports
 import { MaterialReactTable, useMaterialReactTable } from 'material-react-table';
 
@@ -7,7 +7,7 @@ import { MaterialReactTable, useMaterialReactTable } from 'material-react-table'
 import { Box, IconButton, Tooltip } from '@mui/material';
 
 //Icons Imports
-import { Edit, Delete, EditNote, DeleteSweep } from '@mui/icons-material';
+import { Edit, Delete, EditNote, DeleteSweep, Label } from '@mui/icons-material';
 
 //Auth Context
 import { useAuth } from '../context/AuthContext';
@@ -28,6 +28,11 @@ import {
   QueryClientProvider,
 } from '@tanstack/react-query';
 
+import {
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+} from '@mui/icons-material';
+
 const Example = () => {
   const { user } = useAuth();
   const [validationErrors, setValidationErrors] = useState({});
@@ -41,7 +46,7 @@ const Example = () => {
     jobTitle: '',
     startDate: ''
   });
-  
+
   // Add Employee Modal State
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [addFormData, setAddFormData] = useState({
@@ -52,7 +57,7 @@ const Example = () => {
     jobTitle: '',
     startDate: ''
   });
-  
+
   // State for real employees data from MongoDB
   const [localEmployees, setLocalEmployees] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -69,14 +74,14 @@ const Example = () => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       console.log('Fetching employees for department:', user.department);
-      
+
       // API call to get employees from same department
       const response = await axios.get(`/api/users/department/${user.department.id || user.department._id || user.department}`);
-      
+
       console.log('Department employees response:', response.data);
-      
+
       // Transform the data to match the expected format
       const transformedEmployees = response.data.map(emp => {
         console.log('Employee avatar data:', emp.name, emp.avatar);
@@ -93,12 +98,12 @@ const Example = () => {
           subRows: []
         };
       });
-      
+
       setLocalEmployees(transformedEmployees);
     } catch (error) {
       console.error('Error fetching department employees:', error);
       setError('Failed to load employees from your department');
-      
+
       // Fallback to empty array
       setLocalEmployees([]);
     } finally {
@@ -118,7 +123,7 @@ const Example = () => {
       fetchDepartmentEmployees();
     }
   }, [user?.avatar, user?.name, fetchDepartmentEmployees]);
-  
+
   // Bulk operations state
   const [bulkEditModalOpen, setBulkEditModalOpen] = useState(false);
   const [selectedRows, setSelectedRows] = useState({});
@@ -154,13 +159,13 @@ const Example = () => {
   //SAVE EDIT action
   const handleSaveEdit = useCallback(() => {
     if (!editingEmployeeId) return;
-    
+
     // Basic validation
     if (!editFormData.firstName.trim() || !editFormData.lastName.trim() || !editFormData.email.trim()) {
       alert('Please fill in all required fields (First Name, Last Name, Email)');
       return;
     }
-    
+
     // Update the local employees data
     setLocalEmployees(prevEmployees => {
       return prevEmployees.map(employee => {
@@ -178,7 +183,7 @@ const Example = () => {
         return employee;
       });
     });
-    
+
     // Close the modal and reset state
     setEditModalOpen(false);
     setEditingEmployeeId(null);
@@ -190,10 +195,10 @@ const Example = () => {
       jobTitle: '',
       startDate: ''
     });
-    
+
     // Show success message
     alert('Employee updated successfully!');
-    
+
     // Here you would normally also call an API to persist the changes
     console.log('Employee updated:', editFormData);
   }, [editFormData, editingEmployeeId]);
@@ -254,7 +259,7 @@ const Example = () => {
 
       // API call to create employee (you'll need to create this endpoint)
       const response = await axios.post('/api/users/create-employee', newEmployeeData);
-      
+
       console.log('Employee created:', response.data);
 
       // Refresh the employee list
@@ -285,7 +290,7 @@ const Example = () => {
       alert('Please select employees to edit');
       return;
     }
-    
+
     setBulkEditData({
       department: '',
       jobTitle: '',
@@ -305,7 +310,7 @@ const Example = () => {
       setLocalEmployees(prevEmployees => {
         return prevEmployees.filter(employee => !selectedEmployeeIds.includes(employee.id));
       });
-      
+
       setSelectedRows({});
       alert(`${selectedEmployeeIds.length} employees deleted successfully!`);
     }
@@ -320,7 +325,7 @@ const Example = () => {
 
   const handleSaveBulkEdit = useCallback(() => {
     const selectedEmployeeIds = Object.keys(selectedRows);
-    
+
     // Only update fields that have values
     const updateData = {};
     if (bulkEditData.department.trim()) updateData.department = bulkEditData.department;
@@ -374,15 +379,16 @@ const Example = () => {
       setLocalEmployees(prevEmployees => {
         return prevEmployees.filter(employee => employee.id !== row.original.id);
       });
-      
+
       // Show success message
       alert('Employee deleted successfully!');
-      
+
       // Here you would normally also call an API to delete the employee
       console.log('Employee deleted:', row.original.id);
     }
   }, []);
 
+  //outer table columns
   const columns = useMemo(
     () => [
       {
@@ -409,8 +415,8 @@ const Example = () => {
                   width={30}
                   src={getTableAvatarUrl(row.original.avatar)}
                   loading="lazy"
-                  style={{ 
-                    borderRadius: '50%', 
+                  style={{
+                    borderRadius: '50%',
                     objectFit: 'cover',
                     border: '2px solid #e5e7eb',
                     backgroundColor: '#f9fafb'
@@ -473,10 +479,10 @@ const Example = () => {
             },
           },
           {
-             accessorFn:(row)=> new Date(row.startDate),
-             id:'Joining',
-             header:"Joining Date",
-             filterVariant: 'date',
+            accessorFn: (row) => new Date(row.startDate),
+            id: 'Joining',
+            header: "Joining Date",
+            filterVariant: 'date',
             filterFn: 'lessThan',
             sortingFn: 'datetime',
             Cell: ({ cell }) => cell.getValue()?.toLocaleDateString(), //render Date as a string
@@ -494,35 +500,37 @@ const Example = () => {
             },
           },
           // Actions column moved to last position
-          {
-            id: 'actions',
-            header: 'Actions',
-            size: 120,
-            enableEditing: false,
-            enableSorting: false,
-            Cell: ({ row }) => (
-              <Box sx={{ display: 'flex', gap: '0.5rem' }}>
-                <Tooltip title="Edit">
-                  <IconButton onClick={() => handleEditEmployee(row)} size="small">
-                    <Edit />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Delete">
-                  <IconButton color="error" onClick={() => openDeleteConfirmModal(row)} size="small">
-                    <Delete />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-            ),
-          },
+          // {
+          //   id: 'actions',
+          //   header: 'Actions',
+          //   size: 120,
+          //   enableEditing: false,
+          //   enableSorting: false,
+          //   Cell: ({ row }) => (
+          //     <Box sx={{ display: 'flex', gap: '0.5rem' }}>
+          //       {user && user.id === row.original.id && (
+          //         <Tooltip title="Edit">
+          //           <IconButton onClick={() => handleEditEmployee(row)} size="small">
+          //             <Edit />
+          //           </IconButton>
+          //         </Tooltip>
+          //       )}
+          //       {user && user.id === row.original.id && (
+          //         <Tooltip title="Delete">
+          //           <IconButton color="error" onClick={() => openDeleteConfirmModal(row)} size="small">
+          //             <Delete />
+          //           </IconButton>
+          //         </Tooltip>
+          //       )}
+          //     </Box>
+          //   ),
+          // },
         ],
       },
-     
+
     ],
-    [validationErrors, handleEditEmployee, openDeleteConfirmModal],
+    [user, validationErrors, handleEditEmployee, openDeleteConfirmModal],
   );
-
-
 
   const table = useMaterialReactTable({
     columns,
@@ -532,20 +540,36 @@ const Example = () => {
     enableColumnFilterModes: true,
     enableColumnOrdering: true,
     enableGrouping: true,
-    enableColumnPinning: false,
+    enableColumnPinning: true,
     enableFacetedValues: true,
-    enableRowActions: false,
     enableRowSelection: true,
     enableEditing: false,
+    enableRowActions: true,
 
     getRowId: (row) => row.id,
+    enableStickyHeader: true,
+    enablePagination: true,
+
+    muiTableContainerProps: {
+      sx: {
+        maxHeight: '600px',
+        overflowX: 'auto',
+        overflowY: 'auto',
+        position: 'relative',
+        // isolation: 'isolate'
+      }
+    },
+
+    muiTableProps: {
+      sx: {
+        tableLayout: 'fixed',
+      }
+    },
+
     initialState: {
       showColumnFilters: false,
       showGlobalFilter: false, // Set to true to make global search visible
-      columnPinning: {
-        left: [],
-        right: [],
-      },
+      columnPinning: { right: ['mrt-row-actions'] },
     },
     paginationDisplayMode: 'pages',
     positionToolbarAlertBanner: 'bottom',
@@ -561,15 +585,20 @@ const Example = () => {
     },
     muiToolbarAlertBannerProps: isLoadingEmployeesError
       ? {
-          color: 'error',
-          children: error || 'Error loading employees from your department',
-        }
+        color: 'error',
+        children: error || 'Error loading employees from your department',
+      }
       : undefined,
 
 
-    //SignatureCatchPhraser
-    renderDetailPanel: ({ row }) => <EmployeeDetailPanel row={row} onUpdateEmployee={updateEmployeeFromDetail} />,
-    
+
+    renderDetailPanel: ({ row }) => (
+      <EmployeeDetailPanel
+        row={row}
+        onUpdateEmployee={updateEmployeeFromDetail}
+        fetchDepartmentEmployees={fetchDepartmentEmployees} // Pass fetchDepartmentEmployees
+      />
+    ),
     // Remove card styling from detail panel
     muiDetailPanelProps: {
       sx: {
@@ -578,13 +607,18 @@ const Example = () => {
         border: 'none',
         padding: 0,
         margin: 0,
+        // position: 'relative',
+        // overflow: 'visible',
+        width: 'auto',
+        maxWidth: '100%',
         '& .MuiPaper-root': {
           boxShadow: 'none',
-          backgroundColor: 'transparent'
+          backgroundColor: 'transparent',
+          // overflow: 'visible'
         }
       }
     },
-    
+
     // Remove card styling from expanded rows
     muiExpandedRowProps: {
       sx: {
@@ -595,11 +629,34 @@ const Example = () => {
         }
       }
     },
-    
+
+    renderRowActions: ({ row, table }) => (
+      <Box sx={{ display: 'flex', flexWrap: 'nowrap', gap: '8px' }}>
+        {user && user.id === row.original.id && (
+          <IconButton
+            color="secondary"
+            onClick={() => handleEditEmployee(row)}
+          >
+            {/* <EditIcon /> */}
+
+            <Edit />
+          </IconButton>
+        )}
+        {user && user.id === row.original.id && (
+          <IconButton
+            color="error"
+            onClick={() => { openDeleteConfirmModal(row) }}
+          >
+            <DeleteIcon />
+          </IconButton>
+        )}
+      </Box>
+    ),
+
     // Add Employee Button in Top Toolbar
     renderTopToolbarCustomActions: ({ table }) => {
       const selectedRowCount = Object.keys(table.getState().rowSelection).length;
-      
+
       return (
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <button
@@ -619,7 +676,7 @@ const Example = () => {
           >
             + Add Employee
           </button>
-          
+
           {selectedRowCount > 0 && (
             <>
               <span style={{ fontSize: '14px', color: '#666' }}>
@@ -668,10 +725,10 @@ const Example = () => {
     },
 
     // renderTopToolbar: ({ table }) => {
-      
 
-   
-     
+
+
+
 
     //   //  return (
     //   //   <Box
@@ -712,15 +769,15 @@ const Example = () => {
       showProgressBars: isFetchingEmployees,
       rowSelection: selectedRows,
     },
-    
+
     onRowSelectionChange: setSelectedRows,
   });
 
   return (
     <>
       <MaterialReactTable table={table} />
-      
-      {/* Edit Employee Modal */}
+
+      {/* Edit Employee Modal */}// for Add newEmployee
       {editModalOpen && (
         <div style={{
           position: 'fixed',
@@ -743,7 +800,7 @@ const Example = () => {
             overflow: 'auto'
           }}>
             <h2>Edit Employee</h2>
-            
+
             <form onSubmit={(e) => { e.preventDefault(); handleSaveEdit(); }}>
               <div style={{ marginBottom: '16px' }}>
                 <label>First Name *</label>
@@ -835,7 +892,7 @@ const Example = () => {
           </div>
         </div>
       )}
-      
+
       {/* Add Employee Modal */}
       {addModalOpen && (
         <div style={{
@@ -859,7 +916,7 @@ const Example = () => {
             overflow: 'auto'
           }}>
             <h2>Add New Employee</h2>
-            
+
             <form onSubmit={(e) => { e.preventDefault(); handleSaveNewEmployee(); }}>
               <div style={{ marginBottom: '16px' }}>
                 <label>First Name *</label>
@@ -893,14 +950,14 @@ const Example = () => {
               </div>
               <div style={{ marginBottom: '16px' }}>
                 <label>Department</label>
-                <div style={{ 
-                  width: '100%', 
-                  padding: '8px', 
-                  border: '1px solid #e5e7eb', 
+                <div style={{
+                  width: '100%',
+                  padding: '8px',
+                  border: '1px solid #e5e7eb',
                   borderRadius: '4px',
                   backgroundColor: '#f9fafb',
                   color: '#374151',
-                  marginTop: '4px' 
+                  marginTop: '4px'
                 }}>
                   {user?.department?.name || user?.department || 'Your Department'}
                 </div>
@@ -956,7 +1013,7 @@ const Example = () => {
           </div>
         </div>
       )}
-      
+
       {/* Bulk Edit Modal */}
       {bulkEditModalOpen && (
         <div style={{
@@ -983,7 +1040,7 @@ const Example = () => {
             <p style={{ color: '#666', marginBottom: '20px' }}>
               Only fill the fields you want to update. Empty fields will be ignored.
             </p>
-            
+
             <form onSubmit={(e) => { e.preventDefault(); handleSaveBulkEdit(); }}>
               <div style={{ marginBottom: '16px' }}>
                 <label>Department</label>
@@ -1045,25 +1102,37 @@ const Example = () => {
 };
 
 // Table inside the accordion
-const EmployeeDetailPanel = ({ row, onUpdateEmployee }) => {
+const EmployeeDetailPanel = ({ row, onUpdateEmployee, fetchDepartmentEmployees }) => {
+
+  // Get the currently logged-in user from AuthContext
+  const { user: currentUser } = useAuth();
+  const currentUserName = currentUser?.name || '';
+
+  // Optional: Add this console log after the hook call if you want to debug
+  console.log("Current user data:", currentUser);
+
   const [validationErrors, setValidationErrors] = useState({});
   const [taskEditModalOpen, setTaskEditModalOpen] = useState(false);
   const [editingTaskData, setEditingTaskData] = useState({
     taskName: '',
     project: '',
+    AssignedBy: '',
     startDate: '',
     endDate: '',
-    remark: ''
+    remark: '',
+    status: 'pending'
   });
-  
+
   // Add Task Modal State
   const [addTaskModalOpen, setAddTaskModalOpen] = useState(false);
   const [addTaskData, setAddTaskData] = useState({
     taskName: '',
     project: '',
+    AssignedBy: '',
     startDate: '',
     endDate: '',
-    remark: ''
+    remark: '',
+    status: 'pending'
   });
 
 
@@ -1076,12 +1145,14 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee }) => {
   const handleEditDetailTask = useCallback((detailRow) => {
     const taskData = detailRow.original;
     setEditingTaskData({
-      id: taskData.id,
+      id: taskData.id || taskData._id,
       taskName: taskData.taskName || '',
       project: taskData.project || '',
+      AssignedBy: taskData.AssignedBy || '',
       startDate: taskData.startDate || '',
       endDate: taskData.endDate || '',
-      remark: taskData.remark || ''
+      remark: taskData.remark || '',
+      status: taskData.status || 'pending'
     });
     setTaskEditModalOpen(true);
   }, []);
@@ -1094,17 +1165,19 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee }) => {
     }));
   }, []);
 
-  // ADD TASK handlers
+  //ADD TASK handlers
   const handleAddTask = useCallback(() => {
     setAddTaskData({
       taskName: '',
       project: '',
+      AssignedBy: currentUserName,
       startDate: '',
       endDate: '',
-      remark: ''
+      remark: '',
+      status: 'pending'
     });
     setAddTaskModalOpen(true);
-  }, []);
+  }, [currentUserName]);
 
   const handleAddTaskInputChange = useCallback((field, value) => {
     setAddTaskData(prev => ({
@@ -1113,105 +1186,151 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee }) => {
     }));
   }, []);
 
-  const handleSaveNewTask = useCallback(() => {
+  const handleSaveNewTask = useCallback(async () => {
     // Basic validation
     if (!addTaskData.taskName.trim() || !addTaskData.project.trim()) {
       alert('Please fill in required fields (Task and Project)');
       return;
     }
 
-    // Create new task object
-    const newTask = {
-      id: `${row.original.id}-${Date.now()}`,
-      taskName: addTaskData.taskName,
-      project: addTaskData.project,
-      startDate: addTaskData.startDate || new Date().toISOString().split('T')[0],
-      endDate: addTaskData.endDate,
-      remark: addTaskData.remark || 'New task assigned'
-    };
+    try {
+      // Create new task object with unique ID
+      const newTask = {
+        id: Date.now().toString(),
+        taskName: addTaskData.taskName,
+        project: addTaskData.project,
+        AssignedBy: addTaskData.AssignedBy || '',
+        startDate: addTaskData.startDate || '',
+        endDate: addTaskData.endDate || '',
+        remark: addTaskData.remark || '',
+        status: addTaskData.status || 'pending'
+      };
 
-    // Add new task to employee's tasks array
-    if (onUpdateEmployee) {
-      const currentTasks = row.original.tasks || [];
-      onUpdateEmployee(row.original.id, {
-        tasks: [...currentTasks, newTask]
-      });
+      // Add new task to the employee's tasks array
+      const updatedTasks = [...(row.original.tasks || []), newTask];
+
+      // Update the employee with the new tasks array
+      console.log("Employee ID:", row.original.id);
+      await axios.put(`/api/users/${row.original.id}`, { tasks: updatedTasks });
+
+      alert('New task added successfully!');
+      console.log('New task added:', newTask);
+
+      // Update the row data immediately to reflect changes in the detail panel
+      row.original.tasks = updatedTasks;
+
+      // Refresh the main employee list to reflect task changes
+      if (fetchDepartmentEmployees) {
+        await fetchDepartmentEmployees();
+      }
+    } catch (error) {
+      console.error('Error adding task:', error);
+      alert('Failed to add task: ' + (error.response?.data?.message || error.message));
     }
-
-    alert('New task added successfully!');
-    console.log('New task added:', newTask);
 
     // Close modal and reset form
     setAddTaskModalOpen(false);
     setAddTaskData({
       taskName: '',
       project: '',
+      AssignedBy: '',
       startDate: '',
       endDate: '',
-      remark: ''
+      remark: '',
+      status: 'pending'
     });
-  }, [addTaskData, row, onUpdateEmployee]);
+  }, [addTaskData, row, fetchDepartmentEmployees]);
 
   // SAVE TASK EDIT action
-  const handleSaveTaskEdit = useCallback(() => {
+  const handleSaveTaskEdit = useCallback(async () => {
     // Basic validation
     if (!editingTaskData.taskName.trim() || !editingTaskData.project.trim()) {
       alert('Please fill in required fields (Task and Project)');
       return;
     }
-    
-    // Update the specific task in employee's tasks array
-    if (onUpdateEmployee) {
-      const currentTasks = row.original.tasks || [];
-      const updatedTasks = currentTasks.map(task => 
-        task.id === editingTaskData.id 
-          ? {
-              ...task,
-              taskName: editingTaskData.taskName,
-              project: editingTaskData.project,
-              startDate: editingTaskData.startDate,
-              endDate: editingTaskData.endDate,
-              remark: editingTaskData.remark
-            }
-          : task
-      );
-      
-      onUpdateEmployee(row.original.id, {
-        tasks: updatedTasks
+
+    try {
+      // API call to update the task using the /update-task/:taskId endpoint
+
+      await axios.put(`/api/users/update-task/${editingTaskData.id}`, {
+        taskName: editingTaskData.taskName,
+        project: editingTaskData.project,
+        AssignedBy: editingTaskData.AssignedBy,
+        startDate: editingTaskData.startDate,
+        endDate: editingTaskData.endDate,
+        remark: editingTaskData.remark,
+        status: editingTaskData.status
       });
+
+      alert('Task updated successfully!');
+      // console.log('Task updated:', editingTaskData);
+
+      // Update the row data immediately to reflect changes in the detail panel
+      const updatedTasks = row.original.tasks.map(task => {
+        if (task && (task?.id === editingTaskData.id || task?._id === editingTaskData.id)) {
+          return {
+            ...task,
+            taskName: editingTaskData.taskName,
+            project: editingTaskData.project,
+            AssignedBy: editingTaskData.AssignedBy,
+            startDate: editingTaskData.startDate,
+            endDate: editingTaskData.endDate,
+            remark: editingTaskData.remark,
+            status: editingTaskData.status
+          };
+        }
+        return task;
+      });
+      row.original.tasks = updatedTasks;
+
+      // Refresh the main employee list to reflect task changes
+      if (fetchDepartmentEmployees) {
+        await fetchDepartmentEmployees();
+      }
+    } catch (error) {
+      console.error('Error updating task:', error);
+      alert('Failed to update task: ' + (error.response?.data?.message || error.message));
     }
-    
-    alert('Task updated successfully!');
-    console.log('Task updated:', editingTaskData);
-    
+
     // Close modal and reset state
     setTaskEditModalOpen(false);
     setEditingTaskData({
       taskName: '',
       project: '',
+      AssignedBy: '',
       startDate: '',
       endDate: '',
-      remark: ''
+      remark: '',
+      status: 'pending'
     });
-  }, [editingTaskData, row, onUpdateEmployee]);
+  }, [editingTaskData, row, fetchDepartmentEmployees]);
 
   // DELETE action for detail panel
-  const openDeleteDetailConfirmModal = useCallback((detailRow) => {
+  const openDeleteDetailConfirmModal = useCallback(async (detailRow) => {
     if (window.confirm(`Are you sure you want to delete this task?`)) {
-      // Remove task from employee's tasks array
-      if (onUpdateEmployee) {
-        const currentTasks = row.original.tasks || [];
-        const updatedTasks = currentTasks.filter(task => task.id !== detailRow.original.id);
-        
-        onUpdateEmployee(row.original.id, {
-          tasks: updatedTasks
-        });
+      try {
+        // Remove the task from the employee's tasks array
+        const updatedTasks = row.original.tasks.filter(task => task.id !== detailRow.original.id);
+
+        // Update the employee with the modified tasks array
+        await axios.put(`/api/users/${row.original.id}`, { tasks: updatedTasks });
+
+        alert('Task deleted successfully!');
+        console.log('Task deleted:', detailRow.original);
+
+        // Update the row data immediately to reflect changes in the detail panel
+        row.original.tasks = updatedTasks;
+
+        // Refresh the main employee list to reflect task changes
+        if (fetchDepartmentEmployees) {
+          await fetchDepartmentEmployees();
+        }
+      } catch (error) {
+        console.error('Error deleting task:', error);
+        alert('Failed to delete task: ' + (error.response?.data?.message || error.message));
       }
-      
-      alert('Task deleted successfully!');
-      console.log('Task deleted:', detailRow.original);
     }
-  }, [row, onUpdateEmployee]);
+  }, [row, fetchDepartmentEmployees]);
 
   const detailColumns = useMemo(
     () => [
@@ -1246,6 +1365,21 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee }) => {
         },
       },
       {
+        accessorKey: 'AssignedBy',
+        header: 'Assigned By',
+        size: 150,
+        muiEditTextFieldProps: {
+          required: true,
+          error: !!validationErrors?.AssignedBy,
+          helperText: validationErrors?.AssignedBy,
+        },
+        onFocus: () =>
+          setValidationErrors({
+            ...validationErrors,
+            AssignedBy: undefined,
+          }),
+      },
+      {
         accessorFn: (row) => new Date(row.startDate),
         id: 'startDate',
         header: 'Start Date',
@@ -1266,6 +1400,21 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee }) => {
         },
       },
       {
+        accessorKey: 'status',
+        header: 'Status',
+        size: 150,
+        muiEditTextFieldProps: {
+          required: true,
+          error: !!validationErrors?.status,
+          helperText: validationErrors?.status,
+        },
+        onFocus: () =>
+          setValidationErrors({
+            ...validationErrors,
+            status: undefined,
+          }),
+      },
+      {
         accessorKey: 'remark',
         header: 'Remark',
         size: 250,
@@ -1280,36 +1429,36 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee }) => {
         },
       },
       // Actions column moved to last position
-      {
-        id: 'actions',
-        header: 'Actions',
-        size: 100,
-        enableEditing: false,  // Prevents edit mode for this column
-        enableSorting: false,  // Disables sorting on actions
-        // ✅ Cell renderer for action buttons
-        Cell: ({ row:detailRow }) => (
-          <Box sx={{ display: 'flex', gap: '0.5rem' }}>
-            <Tooltip title="Edit">
-              <IconButton
-                color="primary"
-                onClick={() => handleEditDetailTask(detailRow)}
-                size="small"
-              >
-                <Edit />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Delete">
-              <IconButton
-                color="error"
-                onClick={() => openDeleteDetailConfirmModal(detailRow)}
-                size="small"
-              >
-                <Delete />
-              </IconButton>
-            </Tooltip>
-          </Box>
-        ),
-      },
+      // {
+      //   id: 'actions',
+      //   header: 'Actions',
+      //   size: 100,
+      //   enableEditing: false,  // Prevents edit mode for this column
+      //   enableSorting: false,  // Disables sorting on actions
+      //   // ✅ Cell renderer for action buttons
+      //   Cell: ({ row: detailRow }) => (
+      //     <Box sx={{ display: 'flex', gap: '0.5rem' }}>
+      //       <Tooltip title="Edit">
+      //         <IconButton
+      //           color="primary"
+      //           onClick={() => handleEditDetailTask(detailRow)}
+      //           size="small"
+      //         >
+      //           <Edit />
+      //         </IconButton>
+      //       </Tooltip>
+      //       <Tooltip title="Delete">
+      //         <IconButton
+      //           color="error"
+      //           onClick={() => openDeleteDetailConfirmModal(detailRow)}
+      //           size="small"
+      //         >
+      //           <Delete />
+      //         </IconButton>
+      //       </Tooltip>
+      //     </Box>
+      //   ),
+      // },
     ],
     [validationErrors, handleEditDetailTask, openDeleteDetailConfirmModal],
   );
@@ -1322,9 +1471,13 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee }) => {
     editDisplayMode: 'row',
     enableEditing: false,
 
-    getRowId: (row) => row.id,
+    getRowId: (row) => row.id || row._id,
     enableColumnActions: false,
     enableColumnFilters: false,
+    enableColumnPinning: true,
+    enableRowPinning: true,
+    enableRowSelection: true,
+    // rowPinningDisplayMode: 'select-sticky',
     enablePagination: false,
     enableSorting: false,
     enableToolbarInternalActions: false,
@@ -1335,38 +1488,69 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee }) => {
     enableFiltersToggle: false,
     enableTopToolbar: false,
     enableBottomToolbar: false,
-    enableStickyHeader: false,
-    enableRowSelection: false,
+    enableStickyHeader: true,
+    enableRowSelection: true,
     enableExpandAll: false,
     enableExpanding: false,
-    enableRowActions: false,
+    enableRowActions: true,
 
-    // renderRowActions: ({ row: detailRow, table }) => (
-    //   <Box sx={{ display: 'flex', gap: '0.5rem'  }}>
-    //     <Tooltip title="Edit">
-    //       <IconButton
-    //         color="primary"
-    //         onClick={() => table.setEditingRow(detailRow)}
-    //         size="small"
-    //       >
-    //         <Edit />
-    //       </IconButton>
-    //     </Tooltip>
-    //     <Tooltip title="Delete">
-    //       <IconButton
-    //         color="error"
-    //         onClick={() => openDeleteDetailConfirmModal(detailRow)}
-    //         size="small"
-    //       >
-    //         <Delete />
-    //       </IconButton>
-    //     </Tooltip>
-    //   </Box>
-    // ),
-   
+
+    renderRowActions: ({ row: detailRow, table }) => (
+      <Box sx={{ display: 'flex', gap: '0.5rem' }}>
+        <Tooltip title="Edit">
+          <IconButton
+            color="primary"
+            onClick={() => handleEditDetailTask(detailRow)}
+            size="small"
+          >
+            <Edit />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Delete">
+          <IconButton
+            color="error"
+            onClick={() => openDeleteDetailConfirmModal(detailRow)}
+            size="small"
+          >
+            <Delete />
+          </IconButton>
+        </Tooltip>
+      </Box>
+    ),
+
+    // muiTableBodyRowProps: ({ row, table }) => {
+    //   const { density } = table.getState();
+    //   return {
+    //     sx: {
+    //       // Set a fixed height for pinned rows
+    //       height: row.getIsPinned()
+    //         ? `${density === 'compact' ? 37 : density === 'comfortable' ? 53 : 69
+    //         }px`
+    //         : undefined,
+    //       // Add visual distinction for pinned tasks
+    //       backgroundColor: row.getIsPinned() ? '#fef3c7' : 'inherit', // Light yellow/amber background
+    //       borderBottom: row.getIsPinned() ? '2px solid #f59e0b' : undefined, // Amber border
+    //       fontWeight: row.getIsPinned() ? '500' : 'normal', // Slightly bolder text
+    //       boxShadow: row.getIsPinned() ? '0 2px 4px rgba(0,0,0,0.08)' : 'none',
+    //     },
+    //   };
+    // },
+
+    // state: {
+    //   isSaving: isDeletingDetailTask,
+    // },
 
     muiTableHeadCellProps: { sx: { fontWeight: 'bold', } },
-    muiTableBodyCellProps: { sx: { } }, //inner table ke cell ka background color removed 
+    muiTableBodyCellProps: {
+      sx: {
+        position: 'relative',
+        overflow: 'visible'
+      }
+    },
+    initialState: {
+      columnPinning: { right: ['mrt-row-actions'] },
+      rowPinning: { top: [] },
+    },
     state: {
       isSaving: isDeletingDetailTask,
     },
@@ -1374,29 +1558,63 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee }) => {
 
   return (
     <>
-      {/* Add Task Button */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
-        <button
-          onClick={handleAddTask}
-          style={{
-            padding: '6px 12px',
-            background: '#28a745',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '12px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}
-          title="Add New Task"
-        >
-          + Add Task
-        </button>
+      <div style={{
+        width: '100%',
+        maxWidth: '1200px', // Set a maximum width for the detail panel
+        margin: '0 auto', // Center it
+        padding: '0 16px',
+        boxSizing: 'border-box',
+        // This ensures the detail panel doesn't scroll with the outer table
+        position: 'relative',
+        isolation: 'isolate'
+      }}>
+
+        {/* Add Task Button */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
+          <button
+            onClick={handleAddTask}
+            style={{
+              padding: '6px 12px',
+              background: '#28a745',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+            title="Add New Task"
+          >
+            + Add Task
+          </button>
+        </div>
       </div>
-      <MaterialReactTable table={detailTable} />
-      
+      <div
+        style={{
+          // maxHeight: '200px', // This sets the maximum height of the visible area
+          // overflowY: 'auto', // This enables vertical scrolling when content exceeds maxHeight
+          // overflowX: 'auto', // This enables horizontal scrolling if the table is too wide
+          // border: '1px solid #e5e7eb', // Optional: adds a subtle border around the scrollable area
+          // borderRadius: '4px', // Optional: rounds the corners slightly
+          // backgroundColor: '#ffffff', // Optional: ensures clean white background
+          // position: 'relative', // Creates a new positioning context
+          // width: '100%', // Takes full width of the detail panel
+          // isolation: 'isolate' // Ensures this is a separate stacking context
+          maxHeight: '400px',
+          overflowY: 'auto',
+          overflowX: 'auto',
+          border: '1px solid #e5e7eb',
+          borderRadius: '4px',
+          backgroundColor: '#ffffff',
+          position: 'relative',
+          width: '100%',
+          isolation: 'isolate'
+        }}
+      >
+        <MaterialReactTable table={detailTable} />
+      </div>
       {/* Edit Task Modal */}
       {taskEditModalOpen && (
         <div style={{
@@ -1420,7 +1638,7 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee }) => {
             overflow: 'auto'
           }}>
             <h2>Edit Task</h2>
-            
+
             <form onSubmit={(e) => { e.preventDefault(); handleSaveTaskEdit(); }}>
               <div style={{ marginBottom: '16px' }}>
                 <label>Task *</label>
@@ -1442,6 +1660,18 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee }) => {
                   style={{ width: '100%', padding: '8px', border: '1px solid #ccc', marginTop: '4px' }}
                 />
               </div>
+              {/* Assigned By input */}
+              <div style={{ marginBottom: '16px' }}>
+                <label>Assigned By</label>
+                <input
+                  type="text"
+                  value={editingTaskData?.AssignedBy}
+                  onChange={(e) => handleTaskInputChange('AssignedBy', e.target.value)}
+                  required
+                  style={{ width: '100%', padding: '8px', border: '1px solid #ccc', marginTop: '4px' }}
+                />
+              </div>
+
               <div style={{ marginBottom: '16px' }}>
                 <label>Start Date</label>
                 <input
@@ -1455,7 +1685,7 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee }) => {
                 <label>End Date</label>
                 <input
                   type="date"
-                  value={editingTaskData.endDate}
+                  value={editingTaskData?.endDate}
                   onChange={(e) => handleTaskInputChange('endDate', e.target.value)}
                   style={{ width: '100%', padding: '8px', border: '1px solid #ccc', marginTop: '4px' }}
                 />
@@ -1469,17 +1699,32 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee }) => {
                   style={{ width: '100%', padding: '8px', border: '1px solid #ccc', marginTop: '4px', resize: 'vertical' }}
                 />
               </div>
+              {/* status dropdown */}
+              <div style={{ marginBottom: '20px' }}>
+                <label>Status</label>
+                <select
+                  value={editingTaskData.status}
+                  onChange={(e) => handleTaskInputChange('status', e.target.value)}
+                  style={{ width: '100%', padding: '8px', border: '1px solid #ccc', marginTop: '4px' }}
+                >
+                  <option value="pending">Pending</option>
+                  <option value="in-progress">In-progress</option>
+                  <option value="completed">Completed</option>
+                </select>
+              </div>
               <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
                 <button
                   type="button"
                   onClick={() => {
                     setTaskEditModalOpen(false);
                     setEditingTaskData({
-                      jobTitle: '',
-                      department: '',
+                      taskName: '',
+                      project: '',
+                      AssignedBy: '',
                       startDate: '',
                       endDate: '',
-                      signatureCatchPhrase: ''
+                      remark: '',
+                      status: 'pending'
                     });
                   }}
                   style={{ padding: '8px 16px', background: '#ccc', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
@@ -1497,7 +1742,7 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee }) => {
           </div>
         </div>
       )}
-      
+
       {/* Add Task Modal */}
       {addTaskModalOpen && (
         <div style={{
@@ -1521,7 +1766,7 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee }) => {
             overflow: 'auto'
           }}>
             <h2>Add New Task</h2>
-            
+
             <form onSubmit={(e) => { e.preventDefault(); handleSaveNewTask(); }}>
               <div style={{ marginBottom: '16px' }}>
                 <label>Task *</label>
@@ -1541,6 +1786,16 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee }) => {
                   onChange={(e) => handleAddTaskInputChange('project', e.target.value)}
                   required
                   style={{ width: '100%', padding: '8px', border: '1px solid #ccc', marginTop: '4px' }}
+                />
+              </div>
+              <div style={{ marginBottom: '16px' }}>
+                <label>Assigned By</label>
+                <input
+                  type="text"
+                  value={addTaskData.AssignedBy}
+                  onChange={(e) => handleAddTaskInputChange('AssignedBy', e.target.value)}
+                  readOnly
+                  style={{ width: '100%', padding: '8px', border: '1px solid #ccc', marginTop: '4px', backgroundColor: '#f5f5f5', cursor: 'not-allowed' }}
                 />
               </div>
               <div style={{ marginBottom: '16px' }}>
@@ -1569,6 +1824,20 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee }) => {
                   rows={3}
                   style={{ width: '100%', padding: '8px', border: '1px solid #ccc', marginTop: '4px', resize: 'vertical' }}
                 />
+
+                <div style={{ marginBottom: '16px' }}>
+                  <label>Status</label>
+                  <select
+                    value={addTaskData.status}
+                    onChange={(e) => handleAddTaskInputChange(prev => ({ ...prev, status: e.target.value }))}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ccc', marginTop: '4px' }}
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="in-progress">In-progress</option>
+                    <option value="completed">Completed</option>
+                  </select>
+
+                </div>
               </div>
               <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
                 <button
@@ -1578,9 +1847,11 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee }) => {
                     setAddTaskData({
                       taskName: '',
                       project: '',
+                      AssignedBy: '',
                       startDate: '',
                       endDate: '',
-                      remark: ''
+                      remark: '',
+                      status: 'pending'
                     });
                   }}
                   style={{ padding: '8px 16px', background: '#ccc', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
@@ -1622,6 +1893,8 @@ const ExampleWithLocalizationProvider = () => (
 );
 
 export default ExampleWithLocalizationProvider;
+
+
 
 
 

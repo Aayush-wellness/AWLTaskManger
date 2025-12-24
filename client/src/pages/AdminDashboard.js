@@ -5,6 +5,7 @@ import { LogOut, Download, Plus, Users, FolderKanban, Briefcase, FileText, Exter
 import { Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import axios from '../config/axios';
 import ProjectDetails from '../components/ProjectDetails';
+import NotificationBell from '../components/NotificationBell';
 import { formatDate } from '../utils/dateUtils';
 import '../styles/Dashboard.css';
 
@@ -116,6 +117,7 @@ const AdminDashboard = () => {
         <h1>Admin Dashboard</h1>
         <div className="nav-right">
           <span>Welcome, {user?.name}</span>
+          <NotificationBell />
           <button onClick={handleLogout} className="logout-btn">
             <LogOut size={18} /> Logout
           </button>

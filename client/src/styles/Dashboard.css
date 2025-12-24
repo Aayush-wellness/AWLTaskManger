@@ -1,6 +1,6 @@
 .dashboard {
   min-height: 100vh;
-  background: #f5f7fa;
+  background: #97bcf3;
 }
 
 .navbar {
@@ -4103,7 +4103,7 @@ mple Basic Card Design - Override Complex Styling */
 }
 
 /* Remove all animations */
-@keyframes slideInUp,
+/* @keyframes slideInUp,
 @keyframes fadeInScale,
 @keyframes pulse,
 @keyframes shimmer,
@@ -4114,7 +4114,7 @@ mple Basic Card Design - Override Complex Styling */
     opacity: 1 !important;
     box-shadow: none !important;
   }
-}
+} */
 
 .compact-task-group,
 .compact-task-card,

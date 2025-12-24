@@ -1,12 +1,9 @@
 const mongoose = require('mongoose');
 
 const taskSchema = new mongoose.Schema({
-  title: {
+  taskName: {
     type: String,
     required: true
-  },
-  description: {
-    type: String
   },
   project: {
     type: mongoose.Schema.Types.ObjectId,
@@ -17,6 +14,15 @@ const taskSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
+  },
+  AssignedBy: {
+    type: String
+  },
+  startDate: {
+    type: Date
+  },
+  endDate: {
+    type: Date
   },
   status: {
     type: String,

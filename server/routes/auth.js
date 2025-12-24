@@ -167,7 +167,15 @@ router.get('/me', auth, async (req, res) => {
       jobTitle: user.jobTitle,
       startDate: user.startDate,
       avatar: user.avatar,
-      tasks: user.tasks || []
+      tasks: user.tasks.map(task => ({
+        id: task.id || task._id, // Ensure consistent 'id' for frontend
+        taskName: task.taskName,
+        project: task.project,
+        startDate: task.startDate,
+        endDate: task.endDate,
+        remark: task.remark,
+        status: task.status
+      })) || []
     });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
