@@ -885,6 +885,30 @@ body {
 }
 
 /* ============================================
+   TABLE CONTAINERS
+   ============================================ */
+
+.personal-table-container {
+  width: 100%;
+  height: auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--light-border);
+  overflow: hidden;
+}
+
+.employee-table-container {
+  width: 100%;
+  height: auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--light-border);
+  overflow: hidden;
+}
+
+/* ============================================
    UTILITY CLASSES
    ============================================ */
 

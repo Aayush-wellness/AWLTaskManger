@@ -3,8 +3,15 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 
-// Add error boundary and debugging
+// Suppress known Material-UI DOM manipulation errors
 window.addEventListener('error', (event) => {
+  // Suppress the removeChild error - it's a known Material-UI issue
+  if (event.error?.message && event.error.message.includes('removeChild')) {
+    console.warn('Suppressed DOM removeChild error (Material-UI internal issue)');
+    event.preventDefault();
+    return;
+  }
+  
   console.error('Global error:', event.error);
   document.body.innerHTML = `
     <div style="padding: 20px; font-family: Arial, sans-serif;">

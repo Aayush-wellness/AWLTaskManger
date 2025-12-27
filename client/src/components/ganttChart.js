@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 
 const GanttChart = ({ ganttTasks, ganttLinks }) => {
+
   const [tasks] = useState(ganttTasks || [])
   tasks?.map(element => {
     console.log("elements: ", element)

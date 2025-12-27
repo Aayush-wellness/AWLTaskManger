@@ -9,7 +9,7 @@ import EditTaskModal from './EditTaskModal';
 import AddTaskPanelModal from './AddTaskPanelModal';
 
 const PersonalTaskPanel = ({ row, onRefresh }) => {
-  const [viewMode, setViewMode] = useState('table');
+  const [viewMode, setViewMode] = useState('table'); // for Gantt-Charts
   const [taskEditModalOpen, setTaskEditModalOpen] = useState(false);
   const [addTaskModalOpen, setAddTaskModalOpen] = useState(false);
   const [editingTaskData, setEditingTaskData] = useState({

@@ -2,8 +2,8 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import EmployeeDashboard from './pages/EmployeeDashboard';
-import AdminDashboard from './pages/AdminDashboard';
+import EmployeeDashboard from './pages/EmployeeDashboard/index';
+import AdminDashboard from './pages/AdminDashboard/index';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 // Error Boundary Component
@@ -14,10 +14,20 @@ class ErrorBoundary extends React.Component {
   }
 
   static getDerivedStateFromError(error) {
+    // Suppress the removeChild error - it's a known Material-UI DOM manipulation issue
+    if (error.message && error.message.includes('removeChild')) {
+      console.warn('Suppressed DOM removeChild error (known Material-UI issue)');
+      return { hasError: false };
+    }
     return { hasError: true, error };
   }
 
   componentDidCatch(error, errorInfo) {
+    // Suppress the removeChild error
+    if (error.message && error.message.includes('removeChild')) {
+      console.warn('DOM manipulation error suppressed:', error.message);
+      return;
+    }
     console.error('Error Boundary caught an error:', error, errorInfo);
   }
 

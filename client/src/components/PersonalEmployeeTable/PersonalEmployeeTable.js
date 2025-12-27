@@ -162,7 +162,17 @@ const PersonalEmployeeTable = () => {
 
   const handleExportData = () => {
     const tasksToExport = personalData[0]?.tasks || [];
-    const csv = generateCsv(csvConfig)(tasksToExport);
+    // Transform tasks to only include primitive values for CSV export
+    const exportData = tasksToExport.map(task => ({
+      taskName: task.taskName || '',
+      project: task.project || '',
+      AssignedBy: task.AssignedBy || '',
+      startDate: task.startDate ? new Date(task.startDate).toLocaleDateString() : '',
+      endDate: task.endDate ? new Date(task.endDate).toLocaleDateString() : '',
+      remark: task.remark || '',
+      status: task.status || ''
+    }));
+    const csv = generateCsv(csvConfig)(exportData);
     download(csvConfig)(csv);
   };
 
