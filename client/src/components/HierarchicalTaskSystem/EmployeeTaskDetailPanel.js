@@ -147,10 +147,12 @@ const EmployeeTaskDetailPanel = ({ employee, onTasksUpdate }) => {
       alert('Please fill in required fields (Task and Project)');
       return;
     }
-         console.log('editing_id: ', editingTaskData?.id);
+    console.log('editing_id: ', editingTaskData?.id);
+    console.log('employee._id: ', employee._id);
          
     try {
-      await axios.put(`/api/users/update-task/${editingTaskData.id}`, {
+      // Use the new endpoint that accepts employeeId
+      await axios.put(`/api/users/${employee._id}/update-task/${editingTaskData.id}`, {
         taskName: editingTaskData.taskName,
         project: editingTaskData.project,
         AssignedBy: editingTaskData.AssignedBy,

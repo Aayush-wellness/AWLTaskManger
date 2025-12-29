@@ -254,6 +254,55 @@ router.put('/update-task/:taskId', auth, async (req, res) => {
   }
 });
 
+// Update a specific employee's task (for admin/manager viewing employee details)
+router.put('/:employeeId/update-task/:taskId', auth, async (req, res) => {
+  try {
+    const { employeeId, taskId } = req.params;
+    const { taskName, project, AssignedBy, startDate, endDate, remark, status } = req.body;
+
+    console.log('Updating task:', taskId, 'for employee:', employeeId);
+    console.log('Request body:', { taskName, project, AssignedBy, startDate, endDate, remark, status });
+    
+    const user = await User.findById(employeeId);
+    if (!user) {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+    
+    // Find and update the task
+    const taskIndex = user.tasks.findIndex(task => task._id?.toString() === taskId || task.id === taskId);
+
+    if (taskIndex === -1) {
+      console.log('Task not found. Available tasks:', user.tasks.map(t => ({ id: t.id, _id: t._id?.toString() })));
+      return res.status(404).json({ message: 'Task not found' });
+    }
+    
+    // Update task data
+    user.tasks[taskIndex] = {
+      ...user.tasks[taskIndex],
+      taskName: taskName || user.tasks[taskIndex].taskName,
+      project: project || user.tasks[taskIndex].project,
+      AssignedBy: AssignedBy || user.tasks[taskIndex].AssignedBy,
+      startDate: startDate || user.tasks[taskIndex].startDate,
+      endDate: endDate || user.tasks[taskIndex].endDate,
+      remark: remark || user.tasks[taskIndex].remark,
+      status: status || user.tasks[taskIndex].status
+    };
+    
+    await user.save();
+    
+    console.log('Task updated successfully:', user.tasks[taskIndex]);
+    
+    res.json({
+      message: 'Task updated successfully',
+      task: user.tasks[taskIndex]
+    });
+    
+  } catch (error) {
+    console.error('Error updating employee task:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // Delete user's task
 router.delete('/delete-task/:taskId', auth, async (req, res) => {
   try {
