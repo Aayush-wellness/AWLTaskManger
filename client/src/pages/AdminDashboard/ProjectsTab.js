@@ -2,23 +2,11 @@ import { useState } from 'react';
 import { Plus, FileText, ExternalLink } from 'lucide-react';
 import axios from '../../config/axios';
 import ProjectDetails from '../../components/ProjectDetails';
+import CreateProjectModal from '../../components/ProjectManagement/CreateProjectModal';
 
-const ProjectsTab = ({ projects, onRefresh }) => {
+const ProjectsTab = ({ projects, departments, onRefresh }) => {
   const [showModal, setShowModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
-  const [newProject, setNewProject] = useState({ name: '', description: '', status: 'active' });
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      await axios.post('/api/projects', newProject);
-      setNewProject({ name: '', description: '', status: 'active' });
-      setShowModal(false);
-      onRefresh();
-    } catch (err) {
-      alert('Failed to create project');
-    }
-  };
 
   const handleDeleteProject = async (projectId, projectName, e) => {
     e.stopPropagation();
@@ -102,40 +90,12 @@ const ProjectsTab = ({ projects, onRefresh }) => {
       </div>
 
       {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h2>Add New Project</h2>
-            <form onSubmit={handleSubmit}>
-              <input
-                type="text"
-                placeholder="Project Name"
-                value={newProject.name}
-                onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
-                required
-              />
-              <textarea
-                placeholder="Description"
-                value={newProject.description}
-                onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
-                rows="4"
-              />
-              <select
-                value={newProject.status}
-                onChange={(e) => setNewProject({ ...newProject, status: e.target.value })}
-              >
-                <option value="active">Active</option>
-                <option value="completed">Completed</option>
-                <option value="on-hold">On Hold</option>
-              </select>
-              <div className="modal-actions">
-                <button type="button" onClick={() => setShowModal(false)} className="cancel-btn">
-                  Cancel
-                </button>
-                <button type="submit" className="submit-btn">Create</button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <CreateProjectModal
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+          onProjectCreated={() => onRefresh()}
+          departments={departments}
+        />
       )}
 
       {selectedProject && (

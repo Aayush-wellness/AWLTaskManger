@@ -111,12 +111,12 @@ const AdminDashboard = () => {
         >
           Projects
         </button>
-        {/* <button 
+        <button 
           className={activeTab === 'departments' ? 'active' : ''} 
           onClick={() => setActiveTab('departments')}
         >
-          Departments
-        </button> */}
+          Board
+        </button>
       </div>
 
       <div className="dashboard-content">
@@ -142,7 +142,7 @@ const AdminDashboard = () => {
         )}
 
         {activeTab === 'projects' && (
-          <ProjectsTab projects={projects} onRefresh={fetchData} />
+          <ProjectsTab projects={projects} departments={departments} onRefresh={fetchData} />
         )}
 
         {/* {activeTab === 'departments' && (
