@@ -1,6 +1,6 @@
 import { useMemo, useState, useCallback, useEffect } from 'react';
 import { MaterialReactTable, useMaterialReactTable } from 'material-react-table';
-import { Box, IconButton, Tooltip } from '@mui/material';
+import { Box, IconButton } from '@mui/material';
 import { Edit, Delete, EditNote, DeleteSweep } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
 import axios from '../../config/axios';
@@ -15,7 +15,6 @@ import BulkEditModal from './BulkEditModal';
 
 const EmployeeTableComponent = () => {
   const { user } = useAuth();
-  const [validationErrors, setValidationErrors] = useState({});
 
   // Edit Employee Modal State
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -106,7 +105,7 @@ const EmployeeTableComponent = () => {
       console.log('User avatar changed, refreshing employee list...');
       fetchDepartmentEmployees();
     }
-  }, [user?.avatar, user?.name, fetchDepartmentEmployees]);
+  }, [user, fetchDepartmentEmployees]);
 
   // EDIT EMPLOYEE handlers
   const handleEditEmployee = useCallback((row) => {

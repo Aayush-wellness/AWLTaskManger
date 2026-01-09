@@ -77,7 +77,7 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee, fetchDepartmentEmployees }
             status: 'pending'
         });
         setAddTaskModalOpen(true);
-    }, []);
+    }, [currentUserName]);
 
     const handleAddTaskInputChange = useCallback((field, value) => {
         setAddTaskData(prev => ({
