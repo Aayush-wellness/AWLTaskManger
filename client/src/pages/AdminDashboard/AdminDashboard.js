@@ -27,7 +27,7 @@ const AdminDashboard = () => {
     if (showLoading) setIsRefreshing(true);
     try {
       const [tasksRes, employeesRes, deptRes, projRes] = await Promise.all([
-        axios.get('/api/tasks', { params: filters }),
+        axios.get('/api/tasks'),
         axios.get('/api/users'),
         axios.get('/api/departments'),
         axios.get('/api/projects')
@@ -42,7 +42,7 @@ const AdminDashboard = () => {
     } finally {
       if (showLoading) setIsRefreshing(false);
     }
-  }, [filters]);
+  }, []);
 
   // Manual refresh
   const handleManualRefresh = useCallback(() => {
