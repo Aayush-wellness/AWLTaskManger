@@ -4859,3 +4859,38 @@ OMPLETE HOVER EFFECTS REMOVAL - NO SHADOWS OR TRANSFORMS */
 .personal-table-container .MuiIconButton-root:hover {
   background: rgba(102, 126, 234, 0.1);
 }
+
+
+/* Projects Grid */
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+@media (min-width: 1200px) {
+  .projects-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .projects-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+  font-size: 16px;
+}
+
+.empty-state p {
+  margin: 0;
+  color: #999;
+}

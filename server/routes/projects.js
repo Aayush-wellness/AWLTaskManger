@@ -49,22 +49,16 @@ router.get('/', auth, async (req, res) => {
 // Create project (admin only)
 router.post('/', [auth, adminAuth], async (req, res) => {
   try {
-    const { name, description, status, members, tasks } = req.body;
+    const { name, description, status } = req.body;
 
     const project = new Project({
       name,
       description,
       status,
-      members: members || [],
-      tasks: tasks || [],
       createdBy: req.user.userId
     });
 
     await project.save();
-    
-    // Populate members for response
-    await project.populate('members', 'name email jobTitle');
-    
     res.status(201).json(project);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });

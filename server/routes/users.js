@@ -199,6 +199,56 @@ router.post('/add-task', auth, async (req, res) => {
   }
 });
 
+// Create task for a specific employee (for bulk assignment)
+router.post('/:userId/tasks', auth, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { taskName, project, startDate, endDate, remark, status, priority, AssignedBy } = req.body;
+    
+    console.log('Creating task for employee:', userId);
+    console.log('Task data:', { taskName, project, startDate, endDate, remark, status, priority, AssignedBy });
+    
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+    
+    // Initialize tasks array if it doesn't exist
+    if (!user.tasks) {
+      user.tasks = [];
+    }
+    
+    // Create new task with MongoDB _id
+    const newTask = {
+      _id: new (require('mongoose')).Types.ObjectId(),
+      taskName,
+      project,
+      startDate: startDate || new Date(),
+      endDate: endDate || null,
+      remark: remark || '',
+      status: status || 'pending',
+      priority: priority || 'Medium',
+      AssignedBy: AssignedBy || 'Admin',
+      createdAt: new Date()
+    };
+    
+    // Add task to user's tasks array
+    user.tasks.push(newTask);
+    await user.save();
+    
+    console.log('Task created successfully:', newTask);
+    
+    res.status(201).json({
+      message: 'Task created successfully',
+      task: newTask
+    });
+    
+  } catch (error) {
+    console.error('Error creating task:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // Update user's task
 router.put('/update-task/:taskId', auth, async (req, res) => {
   try {

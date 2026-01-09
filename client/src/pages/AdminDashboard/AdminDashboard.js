@@ -142,7 +142,7 @@ const AdminDashboard = () => {
         )}
 
         {activeTab === 'projects' && (
-          <ProjectsTab projects={projects} departments={departments} onRefresh={fetchData} />
+          <ProjectsTab projects={projects} onRefresh={fetchData} />
         )}
 
         {/* {activeTab === 'departments' && (

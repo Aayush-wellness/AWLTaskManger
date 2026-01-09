@@ -1,0 +1,205 @@
+/* ProjectsTab Styles */
+
+.projects-tab-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Tab Navigation */
+.projects-tab-nav {
+  display: flex;
+  gap: 0;
+  padding: 12px 16px;
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  align-items: center;
+}
+
+.tab-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: transparent;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-button:hover {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.tab-button.active {
+  background-color: #e0e7ff;
+  color: #5b7cfa;
+  font-weight: 600;
+}
+
+.tab-button svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Tab Content */
+.projects-tab-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+  min-height: 800px;
+  width: 100%;
+}
+
+/* Embedded Modal Styles */
+.projects-tab-content .bulk-task-modal {
+  max-width: none;
+  border: none;
+  box-shadow: none;
+}
+
+.projects-tab-content .MuiDialog-paper {
+  max-height: none;
+  box-shadow: none;
+  background-color: transparent;
+}
+
+.projects-tab-content .MuiDialogTitle-root {
+  display: none;
+}
+
+.projects-tab-content .MuiDialogContent-root {
+  padding: 0;
+  background-color: transparent;
+  min-height: auto;
+  height: 100%;
+}
+
+.projects-tab-content .MuiDialogActions-root {
+  display: none;
+}
+
+.projects-tab-content .bulk-task-embedded-container {
+  height: 100%;
+  min-height: 800px;
+}
+
+/* View Tasks Container */
+.view-tasks-container {
+  padding: 24px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.view-tasks-container h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 20px;
+}
+
+.projects-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  flex: 1;
+}
+
+.project-item {
+  padding: 16px;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.project-item:hover {
+  border-color: #5b7cfa;
+  box-shadow: 0 4px 12px rgba(91, 124, 250, 0.1);
+}
+
+.project-item h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+}
+
+.project-description {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+}
+
+.project-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.project-department {
+  display: inline-block;
+  padding: 4px 12px;
+  background-color: #e0e7ff;
+  color: #5b7cfa;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+}
+
+.empty-state p {
+  font-size: 16px;
+  color: #9ca3af;
+}
+
+/* Scrollbar Styling */
+.projects-tab-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.projects-tab-content::-webkit-scrollbar-track {
+  background: #f3f4f6;
+}
+
+.projects-tab-content::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.projects-tab-content::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .projects-tab-nav {
+    flex-wrap: wrap;
+  }
+
+  .projects-list {
+    grid-template-columns: 1fr;
+  }
+
+  .projects-tab-content {
+    padding: 16px;
+  }
+}
