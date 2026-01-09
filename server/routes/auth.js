@@ -171,6 +171,7 @@ router.get('/me', auth, async (req, res) => {
         id: task.id || task._id, // Ensure consistent 'id' for frontend
         taskName: task.taskName,
         project: task.project,
+        AssignedBy:task.AssignedBy,
         startDate: task.startDate,
         endDate: task.endDate,
         remark: task.remark,

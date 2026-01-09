@@ -156,10 +156,10 @@ router.post('/create-employee', auth, async (req, res) => {
 router.post('/add-task', auth, async (req, res) => {
   try {
     const userId = req.user.userId;
-    const { taskName, project, startDate, endDate, remark, status } = req.body;
+    const { taskName, project, startDate, endDate, remark, status, AssignedBy } = req.body;
     
     console.log('Adding task for user:', userId);
-    console.log('Task data:', { taskName, project, startDate, endDate, remark, status });
+    console.log('Task data:', { taskName, project, AssignedBy, startDate, endDate, remark, status });
     
     const user = await User.findById(userId);
     if (!user) {
@@ -176,6 +176,7 @@ router.post('/add-task', auth, async (req, res) => {
       id: Date.now().toString(),
       taskName,
       project,
+      AssignedBy: AssignedBy || 'Self',
       startDate: startDate || new Date(),
       endDate: endDate || null,
       remark: remark || '',

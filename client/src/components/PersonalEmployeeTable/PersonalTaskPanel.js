@@ -111,6 +111,12 @@ const PersonalTaskPanel = ({ row, onRefresh }) => {
         size: 150,
       },
       {
+        accessorKey: 'AssignedBy',
+        header: 'Assigned By',
+        size: 130,
+        Cell: ({ cell }) => cell.getValue() || 'N/A',
+      },
+      {
         accessorFn: (row) => new Date(row.startDate),
         id: 'startDate',
         header: 'Start Date',

@@ -13,6 +13,7 @@ import AddTaskModal from './AddTaskModal';
 
 const PersonalEmployeeTable = () => {
   const { user } = useAuth();
+  const currentUserName = user?.name || '';
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [addTaskModalOpen, setAddTaskModalOpen] = useState(false);
   const [editFormData, setEditFormData] = useState({
@@ -22,6 +23,7 @@ const PersonalEmployeeTable = () => {
   const [addTaskData, setAddTaskData] = useState({
     taskName: '',
     project: '',
+    AssignedBy: '',
     startDate: '',
     endDate: '',
     remark: '',
@@ -111,13 +113,14 @@ const PersonalEmployeeTable = () => {
     setAddTaskData({
       taskName: '',
       project: '',
+      AssignedBy: currentUserName,
       startDate: '',
       endDate: '',
       remark: '',
       status: 'pending'
     });
     setAddTaskModalOpen(true);
-  }, []);
+  }, [currentUserName]);
 
   // Save new task
   const handleSaveNewTask = useCallback(async () => {
@@ -142,6 +145,7 @@ const PersonalEmployeeTable = () => {
       setAddTaskData({
         taskName: '',
         project: '',
+        AssignedBy:'',
         startDate: '',
         endDate: '',
         remark: '',

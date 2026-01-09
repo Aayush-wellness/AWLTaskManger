@@ -1,9 +1,9 @@
-const AddTaskModal = ({ 
-  isOpen, 
-  formData, 
-  onFormChange, 
-  onSave, 
-  onCancel 
+const AddTaskModal = ({
+  isOpen,
+  formData,
+  onFormChange,
+  onSave,
+  onCancel
 }) => {
   if (!isOpen) return null;
 
@@ -51,7 +51,19 @@ const AddTaskModal = ({
               style={{ width: '100%', padding: '8px', border: '1px solid #ccc', marginTop: '4px' }}
             />
           </div>
+          
           <div style={{ marginBottom: '16px' }}>
+            <label>Assigned By</label>
+            <input
+              type="text"
+              value={formData.AssignedBy}
+              disabled
+              style={{ width: '100%', padding: '8px', border: '1px solid #ccc', marginTop: '4px', backgroundColor: '#f5f5f5', cursor: 'not-allowed' }}
+            />
+            <small style={{ color: '#666', marginTop: '4px', display: 'block' }}>Auto-filled with your name</small>
+          </div>
+          <div style={{ marginBottom: '16px' }}>
+
             <label>Start Date</label>
             <input
               type="date"
