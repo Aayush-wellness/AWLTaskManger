@@ -139,7 +139,7 @@ const EmployeeTaskDetailPanel = ({ employee, onTasksUpdate }) => {
       remark: '',
       status: 'pending'
     });
-  }, [addTaskData, tasks, employee.id, onTasksUpdate]);
+  }, [addTaskData, tasks, employee._id, onTasksUpdate]);
 
   // SAVE TASK EDIT action
   const handleSaveTaskEdit = useCallback(async () => {
@@ -198,7 +198,7 @@ const EmployeeTaskDetailPanel = ({ employee, onTasksUpdate }) => {
       remark: '',
       status: 'pending'
     });
-  }, [editingTaskData, tasks, onTasksUpdate]);
+  }, [editingTaskData, tasks, employee._id, onTasksUpdate]);
 
   // DELETE action for detail panel
   const openDeleteDetailConfirmModal = useCallback(async (detailRow) => {

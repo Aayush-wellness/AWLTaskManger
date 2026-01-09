@@ -6,7 +6,7 @@ import { getAvatarUrl } from '../utils/avatarUtils';
 import '../styles/ProfileSettings.css';
 
 const ProfileSettings = ({ isOpen, onClose, onProfileUpdate }) => {
-  const { user, updateUser, refreshUser } = useAuth();
+  const { user, updateUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState({
     name: '',

@@ -75,7 +75,7 @@ const PersonalEmployeeTable = () => {
     if (user && user.avatar) {
       fetchPersonalData();
     }
-  }, [user?.avatar, user?.name, user?.jobTitle, fetchPersonalData]);
+  }, [user, fetchPersonalData]);
 
   // Handle edit personal
   const handleEditPersonal = useCallback(() => {

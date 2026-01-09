@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import PersonalEmployeeTable from '../../components/PersonalEmployeeTable/index';
 
 const TasksTab = () => {

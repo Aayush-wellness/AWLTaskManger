@@ -3,7 +3,7 @@ import React, { useState, useMemo } from 'react';
 const GanttChart = ({ ganttTasks, ganttLinks }) => {
 
   const [tasks] = useState(ganttTasks || [])
-  tasks?.map(element => {
+  tasks?.forEach(element => {
     console.log("elements: ", element)
   });
   //  console.log(`ganttTasks.. is ${ganttTasks}`);

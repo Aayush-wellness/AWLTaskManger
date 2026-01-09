@@ -7,7 +7,6 @@ import NotificationBell from '../../components/NotificationBell';
 import DashboardTab from './DashboardTab';
 import TasksTab from './TasksTab';
 import ProjectsTab from './ProjectsTab';
-import DepartmentsTab from './DepartmentsTab';
 import EmployeeListModal from './EmployeeListModal';
 import '../../styles/Dashboard.css';
 
@@ -20,12 +19,6 @@ const AdminDashboard = () => {
   const [departments, setDepartments] = useState([]);
   const [projects, setProjects] = useState([]);
   const [showEmployeeModal, setShowEmployeeModal] = useState(false);
-  const [filters, setFilters] = useState({
-    department: '',
-    employee: '',
-    startDate: '',
-    endDate: ''
-  });
   const [lastUpdated, setLastUpdated] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
