@@ -2,8 +2,8 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import EmployeeDashboard from './pages/EmployeeDashboard/index';
-import AdminDashboard from './pages/AdminDashboard/index';
+import EmployeeDashboard from './pages/EmployeeDashboard/EmployeeDashboard';
+import AdminDashboard from './pages/AdminDashboard/AdminDashboard';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 // Error Boundary Component
