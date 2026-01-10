@@ -4,6 +4,7 @@ import { Box, IconButton, Tooltip } from '@mui/material';
 import { Edit, Delete } from '@mui/icons-material';
 import axios from '../../config/axios';
 import toast from '../../utils/toast';
+import useProjects from '../../hooks/useProjects';
 import AddTaskModal from './AddTaskModal';
 import EditTaskModal from './EditTaskModal';
 import { useAuth } from '../../context/AuthContext';
@@ -12,6 +13,7 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee, fetchDepartmentEmployees }
 
     const { user: currentUser } = useAuth();
     const currentUserName = currentUser?.name || '';
+    const { projects, refetchProjects } = useProjects();
     const [taskEditModalOpen, setTaskEditModalOpen] = useState(false);
     const [editingTaskData, setEditingTaskData] = useState({
         taskName: '',
@@ -33,6 +35,21 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee, fetchDepartmentEmployees }
         remark: '',
         status: 'pending'
     });
+
+    // Refetch projects when add task modal opens
+    const handleAddTask = useCallback(() => {
+        refetchProjects();
+        setAddTaskData({
+            taskName: '',
+            project: '',
+            AssignedBy: currentUserName,
+            startDate: '',
+            endDate: '',
+            remark: '',
+            status: 'pending'
+        });
+        setAddTaskModalOpen(true);
+    }, [currentUserName, refetchProjects]);
 
     // EDIT action for detail panel
     const handleEditDetailTask = useCallback((detailRow) => {
@@ -65,20 +82,6 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee, fetchDepartmentEmployees }
             [field]: value
         }));
     }, []);
-
-    // ADD TASK handlers
-    const handleAddTask = useCallback(() => {
-        setAddTaskData({
-            taskName: '',
-            project: '',
-            AssignedBy: currentUserName,
-            startDate: '',
-            endDate: '',
-            remark: '',
-            status: 'pending'
-        });
-        setAddTaskModalOpen(true);
-    }, [currentUserName]);
 
     const handleAddTaskInputChange = useCallback((field, value) => {
         setAddTaskData(prev => ({
@@ -432,6 +435,7 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee, fetchDepartmentEmployees }
                 formData={editingTaskData}
                 onInputChange={handleTaskInputChange}
                 onSave={handleSaveTaskEdit}
+                projects={projects}
             />
 
             {/* Add Task Modal */}
@@ -441,6 +445,7 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee, fetchDepartmentEmployees }
                 formData={addTaskData}
                 onInputChange={handleAddTaskInputChange}
                 onSave={handleSaveNewTask}
+                projects={projects}
             />
         </>
     );

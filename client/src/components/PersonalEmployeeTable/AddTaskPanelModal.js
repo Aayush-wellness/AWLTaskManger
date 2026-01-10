@@ -3,7 +3,8 @@ const AddTaskPanelModal = ({
   formData, 
   onFormChange, 
   onSave, 
-  onCancel 
+  onCancel,
+  projects = []
 }) => {
   if (!isOpen) return null;
 
@@ -43,13 +44,19 @@ const AddTaskPanelModal = ({
           </div>
           <div style={{ marginBottom: '16px' }}>
             <label>Project *</label>
-            <input
-              type="text"
+            <select
               value={formData.project}
               onChange={(e) => onFormChange('project', e.target.value)}
               required
               style={{ width: '100%', padding: '8px', border: '1px solid #ccc', marginTop: '4px' }}
-            />
+            >
+              <option value="">-- Select Project --</option>
+              {projects.map((proj) => (
+                <option key={proj._id} value={proj.name}>
+                  {proj.name}
+                </option>
+              ))}
+            </select>
           </div>
           
           <div style={{ marginBottom: '16px' }}>

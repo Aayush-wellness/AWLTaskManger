@@ -3,16 +3,15 @@ import { MaterialReactTable, useMaterialReactTable } from 'material-react-table'
 import { Box, IconButton, Tooltip } from '@mui/material';
 import { Edit, Delete } from '@mui/icons-material';
 import { ViewList, Timeline } from '@mui/icons-material';
-import { useAuth } from '../../context/AuthContext';
 import axios from '../../config/axios';
 import toast from '../../utils/toast';
+import useProjects from '../../hooks/useProjects';
 import GanttChart from '../ganttChart';
 import EditTaskModal from './EditTaskModal';
 import AddTaskPanelModal from './AddTaskPanelModal';
 
 const PersonalTaskPanel = ({ row, onRefresh }) => {
-    const { user } = useAuth();
-    const currentUserName = user?.name || '';
+    const { projects, refetchProjects } = useProjects();
   const [viewMode, setViewMode] = useState('table'); // for Gantt-Charts
   const [taskEditModalOpen, setTaskEditModalOpen] = useState(false);
   const [addTaskModalOpen, setAddTaskModalOpen] = useState(false);
@@ -32,6 +31,20 @@ const PersonalTaskPanel = ({ row, onRefresh }) => {
     remark: '',
     status: 'pending'
   });
+
+  // Refetch projects when modals open
+  const handleAddTaskClick = useCallback(() => {
+    refetchProjects();
+    setAddTaskData({
+      taskName: '',
+      project: '',
+      startDate: '',
+      endDate: '',
+      remark: '',
+      status: 'pending'
+    });
+    setAddTaskModalOpen(true);
+  }, [refetchProjects]);
 
   // Handle edit task
   const handleEditTask = useCallback((task) => {
@@ -207,19 +220,7 @@ const PersonalTaskPanel = ({ row, onRefresh }) => {
     enableRowActions: false,
   });
 
-  // Handle add task
-  const handleAddTaskFromPanel = useCallback(() => {
-    setAddTaskData({
-      taskName: '',
-      project: '',
-      AssignedBy: currentUserName,
-      startDate: '',
-      endDate: '',
-      remark: '',
-      status: 'pending'
-    });
-    setAddTaskModalOpen(true);
-  }, [currentUserName]);
+
 
   // Save new task
   const handleSaveNewTaskFromPanel = useCallback(async () => {
@@ -311,7 +312,7 @@ const PersonalTaskPanel = ({ row, onRefresh }) => {
         
         {viewMode === 'table' && (
           <button
-            onClick={handleAddTaskFromPanel}
+            onClick={handleAddTaskClick}
             className="btn-sm btn-success"
             title="Add New Task"
           >
@@ -335,6 +336,7 @@ const PersonalTaskPanel = ({ row, onRefresh }) => {
         onFormChange={(field, value) => setEditingTaskData(prev => ({ ...prev, [field]: value }))}
         onSave={handleSaveTaskEdit}
         onCancel={() => setTaskEditModalOpen(false)}
+        projects={projects}
       />
 
       <AddTaskPanelModal
@@ -343,6 +345,7 @@ const PersonalTaskPanel = ({ row, onRefresh }) => {
         onFormChange={(field, value) => setAddTaskData(prev => ({ ...prev, [field]: value }))}
         onSave={handleSaveNewTaskFromPanel}
         onCancel={() => setAddTaskModalOpen(false)}
+        projects={projects}
       />
     </>
   );

@@ -46,8 +46,8 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-// Create project (admin only)
-router.post('/', [auth, adminAuth], async (req, res) => {
+// Create project (any authenticated user)
+router.post('/', auth, async (req, res) => {
   try {
     const { name, description, status } = req.body;
 
@@ -65,8 +65,8 @@ router.post('/', [auth, adminAuth], async (req, res) => {
   }
 });
 
-// Delete project (admin only)
-router.delete('/:id', [auth, adminAuth], async (req, res) => {
+// Delete project (any authenticated user)
+router.delete('/:id', auth, async (req, res) => {
   try {
     const projectId = req.params.id;
     

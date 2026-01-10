@@ -4,6 +4,7 @@ import { Box, IconButton, Tooltip, Button } from '@mui/material';
 import { Edit, Delete } from '@mui/icons-material';
 import axios from '../../config/axios';
 import toast from '../../utils/toast';
+import useProjects from '../../hooks/useProjects';
 import AddTaskModal from '../EmployeeTable/AddTaskModal';
 import EditTaskModal from '../EmployeeTable/EditTaskModal';
 import { useAuth } from '../../context/AuthContext';
@@ -11,6 +12,7 @@ import { useAuth } from '../../context/AuthContext';
 const EmployeeTaskDetailPanel = ({ employee, onTasksUpdate }) => {
   const { user: currentUser } = useAuth();
   const currentUserName = currentUser?.name || '';
+  const { projects, refetchProjects } = useProjects();
   const [tasks, setTasks] = useState(employee.tasks || []);
   const [taskEditModalOpen, setTaskEditModalOpen] = useState(false);
   const [editingTaskData, setEditingTaskData] = useState({
@@ -32,6 +34,21 @@ const EmployeeTaskDetailPanel = ({ employee, onTasksUpdate }) => {
     remark: '',
     status: 'pending'
   });
+
+  // Refetch projects when add task modal opens
+  const handleAddTask = useCallback(() => {
+    refetchProjects();
+    setAddTaskData({
+      taskName: '',
+      project: '',
+      AssignedBy: currentUserName,
+      startDate: '',
+      endDate: '',
+      remark: '',
+      status: 'pending'
+    });
+    setAddTaskModalOpen(true);
+  }, [currentUserName, refetchProjects]);
 
   // EDIT action for detail panel
   const handleEditDetailTask = useCallback((detailRow) => {
@@ -64,20 +81,6 @@ const EmployeeTaskDetailPanel = ({ employee, onTasksUpdate }) => {
       [field]: value
     }));
   }, []);
-
-  // ADD TASK handlers
-  const handleAddTask = useCallback(() => {
-    setAddTaskData({
-      taskName: '',
-      project: '',
-      AssignedBy: currentUserName,
-      startDate: '',
-      endDate: '',
-      remark: '',
-      status: 'pending'
-    });
-    setAddTaskModalOpen(true);
-  }, [currentUserName]);
 
   const handleAddTaskInputChange = useCallback((field, value) => {
     setAddTaskData(prev => ({
@@ -405,6 +408,7 @@ const EmployeeTaskDetailPanel = ({ employee, onTasksUpdate }) => {
         formData={editingTaskData}
         onInputChange={handleTaskInputChange}
         onSave={handleSaveTaskEdit}
+        projects={projects}
       />
 
       {/* Add Task Modal */}
@@ -414,6 +418,7 @@ const EmployeeTaskDetailPanel = ({ employee, onTasksUpdate }) => {
         formData={addTaskData}
         onInputChange={handleAddTaskInputChange}
         onSave={handleSaveNewTask}
+        projects={projects}
       />
     </>
   );

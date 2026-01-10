@@ -6,7 +6,8 @@ const EditTaskModal = ({
   onClose,
   formData,
   onInputChange,
-  onSave
+  onSave,
+  projects = []
 }) => {
   // Helper function to format date to YYYY-MM-DD for date input
   const formatDateForInput = (dateValue) => {
@@ -81,13 +82,19 @@ const EditTaskModal = ({
           </div>
           <div style={{ marginBottom: '16px' }}>
             <label>Project *</label>
-            <input
-              type="text"
+            <select
               value={formData.project}
               onChange={(e) => onInputChange('project', e.target.value)}
               required
               style={{ width: '100%', padding: '8px', border: '1px solid #ccc', marginTop: '4px' }}
-            />
+            >
+              <option value="">-- Select Project --</option>
+              {projects.map((proj) => (
+                <option key={proj._id} value={proj.name}>
+                  {proj.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div style={{ marginBottom: '16px' }}>
             <label>Assigned By</label>

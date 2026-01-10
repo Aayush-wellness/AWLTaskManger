@@ -4,6 +4,8 @@ import { Box, IconButton, Tooltip } from '@mui/material';
 import { Edit } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
 import axios from '../../config/axios';
+import toast from '../../utils/toast';
+import useProjects from '../../hooks/useProjects';
 import { getTableAvatarUrl } from '../../utils/avatarUtils';
 import { mkConfig, generateCsv, download } from 'export-to-csv';
 import '../../styles/PersonalEmployeeTable.css';
@@ -14,6 +16,7 @@ import AddTaskModal from './AddTaskModal';
 const PersonalEmployeeTable = () => {
   const { user } = useAuth();
   const currentUserName = user?.name || '';
+  const { projects, refetchProjects } = useProjects();
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [addTaskModalOpen, setAddTaskModalOpen] = useState(false);
   const [editFormData, setEditFormData] = useState({
@@ -32,6 +35,21 @@ const PersonalEmployeeTable = () => {
   const [personalData, setPersonalData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Refetch projects when add task modal opens
+  const handleAddTask = useCallback(() => {
+    refetchProjects();
+    setAddTaskData({
+      taskName: '',
+      project: '',
+      AssignedBy: currentUserName,
+      startDate: '',
+      endDate: '',
+      remark: '',
+      status: 'pending'
+    });
+    setAddTaskModalOpen(true);
+  }, [currentUserName, refetchProjects]);
 
   // Fetch personal data
   const fetchPersonalData = useCallback(async () => {
@@ -102,30 +120,16 @@ const PersonalEmployeeTable = () => {
       await fetchPersonalData();
       setEditModalOpen(false);
       setEditFormData({ jobTitle: '', startDate: '' });
-      alert('Personal information updated successfully!');
+      toast.success('Personal information updated successfully!');
     } catch (error) {
-      alert('Failed to update personal information: ' + (error.response?.data?.message || error.message));
+      toast.error('Failed to update personal information: ' + (error.response?.data?.message || error.message));
     }
   }, [editFormData, fetchPersonalData]);
-
-  // Handle add task
-  const handleAddTask = useCallback(() => {
-    setAddTaskData({
-      taskName: '',
-      project: '',
-      AssignedBy: currentUserName,
-      startDate: '',
-      endDate: '',
-      remark: '',
-      status: 'pending'
-    });
-    setAddTaskModalOpen(true);
-  }, [currentUserName]);
 
   // Save new task
   const handleSaveNewTask = useCallback(async () => {
     if (!addTaskData.taskName.trim() || !addTaskData.project.trim()) {
-      alert('Please fill in required fields (Task Name and Project)');
+      toast.warning('Please fill in required fields (Task Name and Project)');
       return;
     }
 
@@ -151,9 +155,9 @@ const PersonalEmployeeTable = () => {
         remark: '',
         status: 'pending'
       });
-      alert('New task added successfully!');
+      toast.success('New task added successfully!');
     } catch (error) {
-      alert('Failed to create task: ' + (error.response?.data?.message || error.message));
+      toast.error('Failed to create task: ' + (error.response?.data?.message || error.message));
     }
   }, [addTaskData, fetchPersonalData]);
 
@@ -294,7 +298,7 @@ const PersonalEmployeeTable = () => {
     getRowId: (row) => row.id,
     initialState: {
       showColumnFilters: false,
-      showGlobalFilter: true,
+      showGlobalFilter: false,
     },
     paginationDisplayMode: 'pages',
     positionToolbarAlertBanner: 'bottom',
@@ -356,6 +360,7 @@ const PersonalEmployeeTable = () => {
         onFormChange={(field, value) => setAddTaskData(prev => ({ ...prev, [field]: value }))}
         onSave={handleSaveNewTask}
         onCancel={() => setAddTaskModalOpen(false)}
+        projects={projects}
       />
     </>
   );
