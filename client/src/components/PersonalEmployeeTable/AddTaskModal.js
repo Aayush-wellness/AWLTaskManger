@@ -78,6 +78,8 @@ const AddTaskModal = ({
               type="date"
               value={formData.endDate}
               onChange={(e) => onFormChange('endDate', e.target.value)}
+              min={formData.startDate}
+              disabled={!formData.startDate}
               style={{ width: '100%', padding: '8px', border: '1px solid #ccc', marginTop: '4px' }}
             />
           </div>

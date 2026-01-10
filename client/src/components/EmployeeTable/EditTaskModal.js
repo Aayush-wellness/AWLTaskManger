@@ -7,6 +7,31 @@ const EditTaskModal = ({
   onInputChange,
   onSave
 }) => {
+  // Helper function to format date to YYYY-MM-DD for date input
+  const formatDateForInput = (dateValue) => {
+    if (!dateValue) return '';
+    
+    // If it's already in YYYY-MM-DD format, return as is
+    if (typeof dateValue === 'string' && dateValue.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      return dateValue;
+    }
+    
+    // Convert to Date object if it's a string
+    const date = typeof dateValue === 'string' ? new Date(dateValue) : dateValue;
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return '';
+    }
+    
+    // Format as YYYY-MM-DD
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}`;
+  };
+
   const handleSaveTaskEdit = useCallback(() => {
     // Basic validation
     if (!formData.taskName?.trim() || !formData.project?.trim()) {
@@ -77,7 +102,7 @@ const EditTaskModal = ({
             <label>Start Date</label>
             <input
               type="date"
-              value={formData.startDate}
+              value={formatDateForInput(formData.startDate)}
               onChange={(e) => onInputChange('startDate', e.target.value)}
               style={{ width: '100%', padding: '8px', border: '1px solid #ccc', marginTop: '4px' }}
             />
@@ -86,8 +111,10 @@ const EditTaskModal = ({
             <label>End Date</label>
             <input
               type="date"
-              value={formData.endDate}
+              value={formatDateForInput(formData.endDate)}
               onChange={(e) => onInputChange('endDate', e.target.value)}
+              min={formatDateForInput(formData.startDate)}
+              disabled={!formData.startDate}
               style={{ width: '100%', padding: '8px', border: '1px solid #ccc', marginTop: '4px' }}
             />
           </div>
