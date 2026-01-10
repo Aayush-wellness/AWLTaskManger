@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import axios from '../../config/axios';
+import toast from '../../utils/toast';
 
 const AddEmployeeModal = ({
   isOpen,
@@ -12,12 +13,12 @@ const AddEmployeeModal = ({
   const handleSaveNewEmployee = useCallback(async () => {
     // Basic validation
     if (!formData.firstName.trim() || !formData.lastName.trim() || !formData.email.trim()) {
-      alert('Please fill in all required fields (First Name, Last Name, Email)');
+      toast.warning('Please fill in all required fields (First Name, Last Name, Email)');
       return;
     }
 
     if (!user || !user.department) {
-      alert('Unable to determine your department. Please try again.');
+      toast.error('Unable to determine your department. Please try again.');
       return;
     }
 
@@ -40,11 +41,11 @@ const AddEmployeeModal = ({
 
       console.log('Employee created:', response.data);
 
-      alert('New employee added successfully!');
+      toast.success('New employee added successfully!');
       onEmployeeAdded();
     } catch (error) {
       console.error('Error creating employee:', error);
-      alert('Failed to create employee: ' + (error.response?.data?.message || error.message));
+      toast.error('Failed to create employee: ' + (error.response?.data?.message || error.message));
     }
   }, [formData, user, onEmployeeAdded]);
 

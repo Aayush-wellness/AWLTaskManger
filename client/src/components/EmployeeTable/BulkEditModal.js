@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import toast from '../../utils/toast';
 
 const BulkEditModal = ({
   isOpen,
@@ -16,7 +17,7 @@ const BulkEditModal = ({
     if (formData.startDate?.trim()) updateData.startDate = formData.startDate;
 
     if (Object.keys(updateData).length === 0) {
-      alert('Please fill at least one field to update');
+      toast.warning('Please fill at least one field to update');
       return;
     }
 

@@ -3,6 +3,7 @@ import { MaterialReactTable, useMaterialReactTable } from 'material-react-table'
 import { Box, IconButton, Tooltip } from '@mui/material';
 import { Edit, Delete } from '@mui/icons-material';
 import axios from '../../config/axios';
+import toast from '../../utils/toast';
 import AddTaskModal from './AddTaskModal';
 import EditTaskModal from './EditTaskModal';
 import { useAuth } from '../../context/AuthContext';
@@ -40,7 +41,7 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee, fetchDepartmentEmployees }
         const taskId = taskData.id || (taskData._id ? taskData._id.toString() : null);
 
         if (!taskId) {
-            alert('Error: Task ID not found');
+            toast.error('Error: Task ID not found');
             return;
         }
 
@@ -88,7 +89,7 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee, fetchDepartmentEmployees }
 
     const handleSaveNewTask = useCallback(async () => {
         if (!addTaskData.taskName.trim() || !addTaskData.project.trim()) {
-            alert('Please fill in required fields (Task and Project)');
+            toast.warning('Please fill in required fields (Task and Project)');
             return;
         }
 
@@ -130,7 +131,7 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee, fetchDepartmentEmployees }
                 // Don't fail the task creation if notification fails
             }
 
-            alert('New task added successfully!');
+            toast.success('New task added successfully!');
             console.log('New task added:', newTask);
 
             row.original.tasks = updatedTasks;
@@ -140,7 +141,7 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee, fetchDepartmentEmployees }
             }
         } catch (error) {
             console.error('Error adding task:', error);
-            alert('Failed to add task: ' + (error.response?.data?.message || error.message));
+            toast.error('Failed to add task: ' + (error.response?.data?.message || error.message));
         }
 
         setAddTaskModalOpen(false);
@@ -158,7 +159,7 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee, fetchDepartmentEmployees }
     // SAVE TASK EDIT action
     const handleSaveTaskEdit = useCallback(async () => {
         if (!editingTaskData.taskName.trim() || !editingTaskData.project.trim()) {
-            alert('Please fill in required fields (Task and Project)');
+            toast.warning('Please fill in required fields (Task and Project)');
             return;
         }
 
@@ -173,7 +174,7 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee, fetchDepartmentEmployees }
                 status: editingTaskData.status
             });
 
-            alert('Task updated successfully!');
+            toast.success('Task updated successfully!');
 
             const updatedTasks = row.original.tasks.map(task => {
                 // Compare both id and _id (convert _id to string for comparison)
@@ -199,7 +200,7 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee, fetchDepartmentEmployees }
             }
         } catch (error) {
             console.error('Error updating task:', error);
-            alert('Failed to update task: ' + (error.response?.data?.message || error.message));
+            toast.error('Failed to update task: ' + (error.response?.data?.message || error.message));
         }
 
         setTaskEditModalOpen(false);
@@ -228,7 +229,7 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee, fetchDepartmentEmployees }
 
                 await axios.put(`/api/users/${row.original.id}`, { tasks: updatedTasks });
 
-                alert('Task deleted successfully!');
+                toast.success('Task deleted successfully!');
                 console.log('Task deleted:', detailRow.original);
 
                 row.original.tasks = updatedTasks;
@@ -238,7 +239,7 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee, fetchDepartmentEmployees }
                 }
             } catch (error) {
                 console.error('Error deleting task:', error);
-                alert('Failed to delete task: ' + (error.response?.data?.message || error.message));
+                toast.error('Failed to delete task: ' + (error.response?.data?.message || error.message));
             }
         }
     }, [row, fetchDepartmentEmployees]);

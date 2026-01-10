@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import toast from '../../utils/toast';
 
 const EditTaskModal = ({
   isOpen,
@@ -35,7 +36,7 @@ const EditTaskModal = ({
   const handleSaveTaskEdit = useCallback(() => {
     // Basic validation
     if (!formData.taskName?.trim() || !formData.project?.trim()) {
-      alert('Please fill in required fields (Task and Project)');
+      toast.warning('Please fill in required fields (Task and Project)');
       return;
     }
 

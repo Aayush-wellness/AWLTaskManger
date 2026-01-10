@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { X, Plus, Edit2, Trash2, ExternalLink, FileText, Eye } from 'lucide-react';
 import axios from '../config/axios';
+import toast from '../utils/toast';
 import { formatDateTime } from '../utils/dateUtils';
 import './ProjectDetails.css';
 
@@ -103,7 +104,7 @@ const ProjectDetails = ({ project, onClose, onRefresh, userRole }) => {
       if (onRefresh) onRefresh();
     } catch (err) {
       console.error('Submit error:', err);
-      alert('Failed to save vendor: ' + (err.response?.data?.message || err.message));
+      toast.error('Failed to save vendor: ' + (err.response?.data?.message || err.message));
     }
   };
 
@@ -117,13 +118,13 @@ const ProjectDetails = ({ project, onClose, onRefresh, userRole }) => {
     try {
       const response = await axios.delete(`/api/project-vendors/${vendorId}`);
       console.log('Delete response:', response);
-      alert('Entry deleted successfully!');
+      toast.success('Entry deleted successfully!');
       fetchVendors();
       if (onRefresh) onRefresh();
     } catch (err) {
       console.error('Delete error:', err);
       const errorMessage = err.response?.data?.message || err.message || 'Failed to delete entry';
-      alert(`Error: ${errorMessage}`);
+      toast.error(`Error: ${errorMessage}`);
     }
   };
 
@@ -142,7 +143,7 @@ const ProjectDetails = ({ project, onClose, onRefresh, userRole }) => {
       setNewDocLink({ name: '', url: '' });
     } else {
       console.log('Validation failed - name or url missing:', { name: newDocLink.name, url: newDocLink.url });
-      alert('Please enter both document name and URL');
+      toast.warning('Please enter both document name and URL');
     }
   };
 

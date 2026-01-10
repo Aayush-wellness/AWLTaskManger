@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import toast from '../../utils/toast';
 
 const EditEmployeeModal = ({
   isOpen,
@@ -10,7 +11,7 @@ const EditEmployeeModal = ({
   const handleSaveEdit = useCallback(() => {
     // Basic validation
     if (!formData.firstName.trim() || !formData.lastName.trim() || !formData.email.trim()) {
-      alert('Please fill in all required fields (First Name, Last Name, Email)');
+      toast.warning('Please fill in all required fields (First Name, Last Name, Email)');
       return;
     }
 

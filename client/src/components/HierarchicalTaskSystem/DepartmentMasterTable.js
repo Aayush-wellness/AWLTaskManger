@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { ChevronRight, Trash2, Plus } from 'lucide-react';
 import axios from '../../config/axios';
+import toast from '../../utils/toast';
 import './HierarchicalTaskSystem.css';
 
 const DepartmentMasterTable = ({ departments, onSelectDepartment, onDepartmentsUpdate }) => {
@@ -42,13 +43,13 @@ const DepartmentMasterTable = ({ departments, onSelectDepartment, onDepartmentsU
       try {
         setLoading(true);
         await axios.delete(`/api/departments/${deptId}`);
-        alert('Department deleted successfully!');
+        toast.success('Department deleted successfully!');
         if (onDepartmentsUpdate) {
           await onDepartmentsUpdate();
         }
       } catch (error) {
         console.error('Error deleting department:', error);
-        alert('Failed to delete department: ' + (error.response?.data?.message || error.message));
+        toast.error('Failed to delete department: ' + (error.response?.data?.message || error.message));
       } finally {
         setLoading(false);
       }
@@ -58,7 +59,7 @@ const DepartmentMasterTable = ({ departments, onSelectDepartment, onDepartmentsU
   const handleBulkDelete = async () => {
     const selectedIds = Object.keys(selectedDepts).filter(id => selectedDepts[id]);
     if (selectedIds.length === 0) {
-      alert('Please select departments to delete');
+      toast.warning('Please select departments to delete');
       return;
     }
 
@@ -68,14 +69,14 @@ const DepartmentMasterTable = ({ departments, onSelectDepartment, onDepartmentsU
         await Promise.all(
           selectedIds.map(deptId => axios.delete(`/api/departments/${deptId}`))
         );
-        alert(`${selectedIds.length} department(s) deleted successfully!`);
+        toast.success(`${selectedIds.length} department(s) deleted successfully!`);
         setSelectedDepts({});
         if (onDepartmentsUpdate) {
           await onDepartmentsUpdate();
         }
       } catch (error) {
         console.error('Error deleting departments:', error);
-        alert('Failed to delete some departments');
+        toast.error('Failed to delete some departments');
       } finally {
         setLoading(false);
       }
@@ -84,14 +85,14 @@ const DepartmentMasterTable = ({ departments, onSelectDepartment, onDepartmentsU
 
   const handleAddDept = async () => {
     if (!newDeptName.trim()) {
-      alert('Please enter a department name');
+      toast.warning('Please enter a department name');
       return;
     }
 
     try {
       setLoading(true);
       await axios.post('/api/departments', { name: newDeptName });
-      alert('Department created successfully!');
+      toast.success('Department created successfully!');
       setNewDeptName('');
       setShowAddForm(false);
       if (onDepartmentsUpdate) {
@@ -99,7 +100,7 @@ const DepartmentMasterTable = ({ departments, onSelectDepartment, onDepartmentsU
       }
     } catch (error) {
       console.error('Error creating department:', error);
-      alert('Failed to create department: ' + (error.response?.data?.message || error.message));
+      toast.error('Failed to create department: ' + (error.response?.data?.message || error.message));
     } finally {
       setLoading(false);
     }

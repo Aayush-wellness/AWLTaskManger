@@ -3,6 +3,7 @@ import { MaterialReactTable, useMaterialReactTable } from 'material-react-table'
 import { Box, IconButton, Tooltip, Button } from '@mui/material';
 import { Edit, Delete } from '@mui/icons-material';
 import axios from '../../config/axios';
+import toast from '../../utils/toast';
 import AddTaskModal from '../EmployeeTable/AddTaskModal';
 import EditTaskModal from '../EmployeeTable/EditTaskModal';
 import { useAuth } from '../../context/AuthContext';
@@ -39,7 +40,7 @@ const EmployeeTaskDetailPanel = ({ employee, onTasksUpdate }) => {
     const taskId = taskData._id ? taskData._id.toString() : taskData.id;
     console.log('taskID::', taskId);
     if (!taskId) {
-      alert('Error: Task ID not found');
+      toast.error('Error: Task ID not found');
       return;
     }
 
@@ -87,7 +88,7 @@ const EmployeeTaskDetailPanel = ({ employee, onTasksUpdate }) => {
 
   const handleSaveNewTask = useCallback(async () => {
     if (!addTaskData.taskName.trim() || !addTaskData.project.trim()) {
-      alert('Please fill in required fields (Task and Project)');
+      toast.warning('Please fill in required fields (Task and Project)');
       return;
     }
 
@@ -123,10 +124,10 @@ const EmployeeTaskDetailPanel = ({ employee, onTasksUpdate }) => {
 
       setTasks(updatedTasks);
       onTasksUpdate(updatedTasks);
-      alert('New task added successfully!');
+      toast.success('New task added successfully!');
     } catch (error) {
       console.error('Error adding task:', error);
-      alert('Failed to add task: ' + (error.response?.data?.message || error.message));
+      toast.error('Failed to add task: ' + (error.response?.data?.message || error.message));
     }
 
     setAddTaskModalOpen(false);
@@ -144,7 +145,7 @@ const EmployeeTaskDetailPanel = ({ employee, onTasksUpdate }) => {
   // SAVE TASK EDIT action
   const handleSaveTaskEdit = useCallback(async () => {
     if (!editingTaskData.taskName.trim() || !editingTaskData.project.trim()) {
-      alert('Please fill in required fields (Task and Project)');
+      toast.warning('Please fill in required fields (Task and Project)');
       return;
     }
     console.log('editing_id: ', editingTaskData?.id);
@@ -182,10 +183,10 @@ const EmployeeTaskDetailPanel = ({ employee, onTasksUpdate }) => {
 
       setTasks(updatedTasks);
       onTasksUpdate(updatedTasks);
-      alert('Task updated successfully!');
+      toast.success('Task updated successfully!');
     } catch (error) {
       console.error('Error updating task:', error);
-      alert('Failed to update task: ' + (error.response?.data?.message || error.message));
+      toast.error('Failed to update task: ' + (error.response?.data?.message || error.message));
     }
 
     setTaskEditModalOpen(false);
@@ -216,10 +217,10 @@ const EmployeeTaskDetailPanel = ({ employee, onTasksUpdate }) => {
 
         setTasks(updatedTasks);
         onTasksUpdate(updatedTasks);
-        alert('Task deleted successfully!');
+        toast.success('Task deleted successfully!');
       } catch (error) {
         console.error('Error deleting task:', error);
-        alert('Failed to delete task: ' + (error.response?.data?.message || error.message));
+        toast.error('Failed to delete task: ' + (error.response?.data?.message || error.message));
       }
     }
   }, [tasks, employee._id, onTasksUpdate]);

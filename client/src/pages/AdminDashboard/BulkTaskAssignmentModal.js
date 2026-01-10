@@ -21,6 +21,7 @@ import {
 } from '@mui/material';
 import { Upload } from 'lucide-react';
 import axios from '../../config/axios';
+import toast from '../../utils/toast';
 import * as XLSX from 'xlsx';
 import './BulkTaskAssignmentModal.css';
 
@@ -233,12 +234,12 @@ const BulkTaskAssignmentModal = ({ isOpen, onClose, onTasksCreated, isEmbedded =
       .map(([_, task]) => task);
 
     if (selectedEmployeeIds.length === 0) {
-      alert('Please select at least one assignee');
+      toast.warning('Please select at least one assignee');
       return;
     }
 
     if (tasksToCreate.length === 0) {
-      alert('Please select at least one task to create');
+      toast.warning('Please select at least one task to create');
       return;
     }
 
@@ -274,12 +275,12 @@ const BulkTaskAssignmentModal = ({ isOpen, onClose, onTasksCreated, isEmbedded =
 
       await Promise.all(promises);
 
-      alert(`Successfully created ${tasksToCreate.length} task(s) for ${selectedEmployeeIds.length} employee(s)`);
+      toast.success(`Successfully created ${tasksToCreate.length} task(s) for ${selectedEmployeeIds.length} employee(s)`);
       onTasksCreated();
       handleClose();
     } catch (err) {
       console.error('Error creating tasks:', err);
-      alert('Failed to create tasks: ' + (err.response?.data?.message || err.message));
+      toast.error('Failed to create tasks: ' + (err.response?.data?.message || err.message));
     } finally {
       setIsSubmitting(false);
     }

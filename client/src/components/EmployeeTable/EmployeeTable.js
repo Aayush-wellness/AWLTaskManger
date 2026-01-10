@@ -4,6 +4,7 @@ import { Box, IconButton } from '@mui/material';
 import { Edit, Delete, EditNote, DeleteSweep } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
 import axios from '../../config/axios';
+import toast from '../../utils/toast';
 import { getTableAvatarUrl } from '../../utils/avatarUtils';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -133,7 +134,7 @@ const EmployeeTableComponent = () => {
     if (!editingEmployeeId) return;
 
     if (!editFormData.firstName.trim() || !editFormData.lastName.trim() || !editFormData.email.trim()) {
-      alert('Please fill in all required fields (First Name, Last Name, Email)');
+      toast.warning('Please fill in all required fields (First Name, Last Name, Email)');
       return;
     }
 
@@ -165,7 +166,7 @@ const EmployeeTableComponent = () => {
       startDate: ''
     });
 
-    alert('Employee updated successfully!');
+    toast.success('Employee updated successfully!');
     console.log('Employee updated:', editFormData);
   }, [editFormData, editingEmployeeId]);
 
@@ -206,7 +207,7 @@ const EmployeeTableComponent = () => {
   const handleBulkEdit = useCallback(() => {
     const selectedEmployeeIds = Object.keys(selectedRows);
     if (selectedEmployeeIds.length === 0) {
-      alert('Please select employees to edit');
+      toast.warning('Please select employees to edit');
       return;
     }
 
@@ -221,7 +222,7 @@ const EmployeeTableComponent = () => {
   const handleBulkDelete = useCallback(() => {
     const selectedEmployeeIds = Object.keys(selectedRows);
     if (selectedEmployeeIds.length === 0) {
-      alert('Please select employees to delete');
+      toast.warning('Please select employees to delete');
       return;
     }
 
@@ -231,7 +232,7 @@ const EmployeeTableComponent = () => {
       });
 
       setSelectedRows({});
-      alert(`${selectedEmployeeIds.length} employees deleted successfully!`);
+      toast.success(`${selectedEmployeeIds.length} employees deleted successfully!`);
     }
   }, [selectedRows]);
 
@@ -251,7 +252,7 @@ const EmployeeTableComponent = () => {
     if (bulkEditData.startDate?.trim()) updateData.startDate = bulkEditData.startDate;
 
     if (Object.keys(updateData).length === 0) {
-      alert('Please fill at least one field to update');
+      toast.warning('Please fill at least one field to update');
       return;
     }
 
@@ -272,7 +273,7 @@ const EmployeeTableComponent = () => {
       startDate: ''
     });
 
-    alert(`${selectedEmployeeIds.length} employees updated successfully!`);
+    toast.success(`${selectedEmployeeIds.length} employees updated successfully!`);
   }, [selectedRows, bulkEditData]);
 
   // UPDATE EMPLOYEE FROM DETAIL PANEL
@@ -297,7 +298,7 @@ const EmployeeTableComponent = () => {
         return prevEmployees.filter(employee => employee.id !== row.original.id);
       });
 
-      alert('Employee deleted successfully!');
+      toast.success('Employee deleted successfully!');
       console.log('Employee deleted:', row.original.id);
     }
   }, []);

@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import toast from '../../utils/toast';
 
 const AddTaskModal = ({
     isOpen,
@@ -10,7 +11,7 @@ const AddTaskModal = ({
     const handleSaveNewTask = useCallback(() => {
         // Basic validation
         if (!formData.taskName?.trim() || !formData.project?.trim()) {
-            alert('Please fill in required fields (Task and Project)');
+            toast.warning('Please fill in required fields (Task and Project)');
             return;
         }
 
@@ -89,6 +90,7 @@ const AddTaskModal = ({
                             value={formData.endDate}
                             onChange={(e) => onInputChange('endDate', e.target.value)}
                             min={formData.startDate}
+                            disabled={!formData.startDate}
                             style={{ width: '100%', padding: '8px', border: '1px solid #ccc', marginTop: '4px' }}
                         />
                     </div>

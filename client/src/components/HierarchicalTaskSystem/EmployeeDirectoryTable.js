@@ -14,6 +14,7 @@ import {
 import { mkConfig, generateCsv, download } from 'export-to-csv';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
+import toast from '../../utils/toast';
 import EmployeeTaskDetailPanel from './EmployeeTaskDetailPanel';
 import './HierarchicalTaskSystem.css';
 
@@ -136,7 +137,7 @@ const EmployeeDirectoryTable = ({ department, employees, onSelectEmployee, onBac
     });
 
     if (allData.length === 0) {
-      alert('No data to export');
+      toast.warning('No data to export');
       return;
     }
 

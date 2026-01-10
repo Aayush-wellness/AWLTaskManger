@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
 import axios from '../../config/axios';
+import toast from '../../utils/toast';
 
 const DepartmentsTab = ({ departments, onRefresh }) => {
   const [showModal, setShowModal] = useState(false);
@@ -13,8 +14,9 @@ const DepartmentsTab = ({ departments, onRefresh }) => {
       setNewDept({ name: '', description: '' });
       setShowModal(false);
       onRefresh();
+      toast.success('Department created successfully!');
     } catch (err) {
-      alert('Failed to create department');
+      toast.error('Failed to create department');
     }
   };
 
@@ -23,9 +25,9 @@ const DepartmentsTab = ({ departments, onRefresh }) => {
       try {
         await axios.delete(`/api/departments/${deptId}`);
         onRefresh();
-        alert('Department deleted successfully');
+        toast.success('Department deleted successfully!');
       } catch (err) {
-        alert('Failed to delete department: ' + (err.response?.data?.message || err.message));
+        toast.error('Failed to delete department: ' + (err.response?.data?.message || err.message));
       }
     }
   };

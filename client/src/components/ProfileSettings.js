@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { User, Mail, Phone, MapPin, Calendar, Download, Edit2, Save, X, Camera } from 'lucide-react';
 import axios from '../config/axios';
+import toast from '../utils/toast';
 import { getAvatarUrl } from '../utils/avatarUtils';
 import '../styles/ProfileSettings.css';
 
@@ -149,7 +150,7 @@ const ProfileSettings = ({ isOpen, onClose, onProfileUpdate }) => {
         onProfileUpdate(response.data.user);
       }
       
-      alert('Profile updated successfully!');
+      toast.success('Profile updated successfully!');
     } catch (error) {
       console.error('Error updating profile:', error);
       console.error('Error details:', error.response?.data);
@@ -161,7 +162,7 @@ const ProfileSettings = ({ isOpen, onClose, onProfileUpdate }) => {
         errorMessage += ': ' + error.message;
       }
       
-      alert(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -176,7 +177,7 @@ const ProfileSettings = ({ isOpen, onClose, onProfileUpdate }) => {
 
   const handleDownloadAvatar = async () => {
     if (!user.avatar) {
-      alert('No avatar to download');
+      toast.warning('No avatar to download');
       return;
     }
 
@@ -196,7 +197,7 @@ const ProfileSettings = ({ isOpen, onClose, onProfileUpdate }) => {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error downloading avatar:', error);
-      alert('Failed to download avatar');
+      toast.error('Failed to download avatar');
     }
   };
 

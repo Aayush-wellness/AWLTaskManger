@@ -3,12 +3,16 @@ import { MaterialReactTable, useMaterialReactTable } from 'material-react-table'
 import { Box, IconButton, Tooltip } from '@mui/material';
 import { Edit, Delete } from '@mui/icons-material';
 import { ViewList, Timeline } from '@mui/icons-material';
+import { useAuth } from '../../context/AuthContext';
 import axios from '../../config/axios';
+import toast from '../../utils/toast';
 import GanttChart from '../ganttChart';
 import EditTaskModal from './EditTaskModal';
 import AddTaskPanelModal from './AddTaskPanelModal';
 
 const PersonalTaskPanel = ({ row, onRefresh }) => {
+    const { user } = useAuth();
+    const currentUserName = user?.name || '';
   const [viewMode, setViewMode] = useState('table'); // for Gantt-Charts
   const [taskEditModalOpen, setTaskEditModalOpen] = useState(false);
   const [addTaskModalOpen, setAddTaskModalOpen] = useState(false);
@@ -49,9 +53,9 @@ const PersonalTaskPanel = ({ row, onRefresh }) => {
       await axios.put(`/api/users/update-task/${editingTaskData.id}`, editingTaskData);
       if (onRefresh) await onRefresh();
       setTaskEditModalOpen(false);
-      alert('Task updated successfully!');
+      toast.success('Task updated successfully!');
     } catch (error) {
-      alert('Failed to update task: ' + (error.response?.data?.message || error.message));
+      toast.error('Failed to update task: ' + (error.response?.data?.message || error.message));
     }
   }, [editingTaskData, onRefresh]);
 
@@ -61,9 +65,9 @@ const PersonalTaskPanel = ({ row, onRefresh }) => {
       try {
         await axios.delete(`/api/users/delete-task/${taskId}`);
         if (onRefresh) await onRefresh();
-        alert('Task deleted successfully!');
+        toast.success('Task deleted successfully!');
       } catch (error) {
-        alert('Failed to delete task: ' + (error.response?.data?.message || error.message));
+        toast.error('Failed to delete task: ' + (error.response?.data?.message || error.message));
       }
     }
   }, [onRefresh]);
@@ -208,18 +212,19 @@ const PersonalTaskPanel = ({ row, onRefresh }) => {
     setAddTaskData({
       taskName: '',
       project: '',
+      AssignedBy: currentUserName,
       startDate: '',
       endDate: '',
       remark: '',
       status: 'pending'
     });
     setAddTaskModalOpen(true);
-  }, []);
+  }, [currentUserName]);
 
   // Save new task
   const handleSaveNewTaskFromPanel = useCallback(async () => {
     if (!addTaskData.taskName.trim() || !addTaskData.project.trim()) {
-      alert('Please fill in required fields (Task Name and Project)');
+      toast.warning('Please fill in required fields (Task Name and Project)');
       return;
     }
 
@@ -244,9 +249,9 @@ const PersonalTaskPanel = ({ row, onRefresh }) => {
         remark: '',
         status: 'pending'
       });
-      alert('New task added successfully!');
+      toast.success('New task added successfully!');
     } catch (error) {
-      alert('Failed to create task: ' + (error.response?.data?.message || error.message));
+      toast.error('Failed to create task: ' + (error.response?.data?.message || error.message));
     }
   }, [addTaskData, onRefresh]);
 
