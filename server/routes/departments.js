@@ -13,6 +13,48 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Get all departments with employee counts (optimized for admin dashboard)
+router.get('/with-counts', async (req, res) => {
+  try {
+    const User = require('../models/User');
+    
+    // Get all departments
+    const departments = await Department.find().sort({ name: 1 });
+    
+    // Get employee counts for each department in a single query
+    const employeeCounts = await User.aggregate([
+      {
+        $group: {
+          _id: '$department',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+    
+    // Create a map for quick lookup
+    const countMap = {};
+    employeeCounts.forEach(item => {
+      countMap[item._id?.toString()] = item.count;
+    });
+    
+    // Enrich departments with employee counts
+    const enrichedDepts = departments.map(dept => ({
+      _id: dept._id,
+      name: dept.name,
+      description: dept.description,
+      employeeCount: countMap[dept._id.toString()] || 0,
+      createdBy: dept.createdBy,
+      createdAt: dept.createdAt,
+      updatedAt: dept.updatedAt
+    }));
+    
+    res.json(enrichedDepts);
+  } catch (error) {
+    console.error('Error fetching departments with counts:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // Create department (admin only)
 router.post('/', [auth, adminAuth], async (req, res) => {
   try {

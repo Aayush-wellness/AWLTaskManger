@@ -294,7 +294,7 @@ const PersonalEmployeeTable = () => {
     getRowId: (row) => row.id,
     initialState: {
       showColumnFilters: false,
-      showGlobalFilter: false,
+      showGlobalFilter: true,
     },
     paginationDisplayMode: 'pages',
     positionToolbarAlertBanner: 'bottom',

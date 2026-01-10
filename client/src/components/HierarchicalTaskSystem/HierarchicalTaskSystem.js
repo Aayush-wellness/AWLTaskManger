@@ -21,24 +21,9 @@ const HierarchicalTaskSystem = () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await axios.get('/api/departments');
-      
-      // Enrich departments with employee count
-      const enrichedDepts = await Promise.all(
-        res.data.map(async (dept) => {
-          try {
-            const empRes = await axios.get(`/api/users/department/${dept._id}`);
-            return {
-              ...dept,
-              employeeCount: empRes.data.length
-            };
-          } catch {
-            return { ...dept, employeeCount: 0 };
-          }
-        })
-      );
-      
-      setDepartments(enrichedDepts);
+      // Use the optimized endpoint that returns departments with employee counts
+      const res = await axios.get('/api/departments/with-counts');
+      setDepartments(res.data);
     } catch (err) {
       console.error('Failed to fetch departments:', err);
       setError('Failed to load departments');
