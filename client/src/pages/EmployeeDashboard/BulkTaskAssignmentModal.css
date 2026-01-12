@@ -1,0 +1,36 @@
+/* Bulk Task Assignment Modal Styles */
+
+.bulk-task-embedded-container {
+  display: flex;
+  height: 100%;
+  gap: 20px;
+}
+
+.bulk-task-embedded-content {
+  display: flex;
+  gap: 20px;
+  height: 100%;
+  width: 100%;
+}
+
+/* Scrollbar styling */
+.bulk-task-embedded-container::-webkit-scrollbar,
+.bulk-task-embedded-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.bulk-task-embedded-container::-webkit-scrollbar-track,
+.bulk-task-embedded-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.bulk-task-embedded-container::-webkit-scrollbar-thumb,
+.bulk-task-embedded-content::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.bulk-task-embedded-container::-webkit-scrollbar-thumb:hover,
+.bulk-task-embedded-content::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

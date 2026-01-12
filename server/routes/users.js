@@ -416,51 +416,7 @@ router.put('/test-update', auth, async (req, res) => {
   }
 });
 
-// Create new task (including tasks array)
-router.put('/:userId', auth, async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const { tasks, name, email, phone, address, jobTitle, startDate } = req.body;
-
-    console.log('Updating user:', userId);
-    console.log('Update data:', { tasks, name, email, phone, address, jobTitle, startDate });
-
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    // Check if tasks are being updated
-    if (tasks !== undefined) {
-      user.tasks = tasks;
-      // NOTE: Notification creation is handled by frontend calling /api/notifications/create
-      // This prevents duplicate notifications
-    }
-
-    // Update other fields if provided
-    if (name) user.name = name;
-    if (email) user.email = email;
-    if (phone) user.phone = phone;
-    if (address) user.address = address;
-    if (jobTitle) user.jobTitle = jobTitle;
-    if (startDate) user.startDate = startDate;
-
-    await user.save();
-
-    console.log('User updated successfully');
-
-    const updatedUser = await User.findById(userId).select('-password').populate('department');
-    res.json({
-      message: 'User updated successfully',
-      user: updatedUser
-    });
-  } catch (error) {
-    console.error('Error updating user:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
-
-// Update user profile
+// Update user profile (MUST BE BEFORE /:userId route)
 router.put('/profile', [auth, upload.single('avatar')], async (req, res) => {
   try {
     console.log('Profile update request received');
@@ -469,7 +425,7 @@ router.put('/profile', [auth, upload.single('avatar')], async (req, res) => {
     console.log('File:', req.file);
     
     const userId = req.user.userId;
-    const { name, email, phone, address, department, jobTitle, startDate } = req.body;
+    const { name, email, phone, address, jobTitle, startDate } = req.body;
 
     // Find the user
     const user = await User.findById(userId);
@@ -545,6 +501,50 @@ router.put('/profile', [auth, upload.single('avatar')], async (req, res) => {
       });
     }
     
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Create new task (including tasks array) - GENERIC ROUTE (MUST BE LAST)
+router.put('/:userId', auth, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { tasks, name, email, phone, address, jobTitle, startDate } = req.body;
+
+    console.log('Updating user:', userId);
+    console.log('Update data:', { tasks, name, email, phone, address, jobTitle, startDate });
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Check if tasks are being updated
+    if (tasks !== undefined) {
+      user.tasks = tasks;
+      // NOTE: Notification creation is handled by frontend calling /api/notifications/create
+      // This prevents duplicate notifications
+    }
+
+    // Update other fields if provided
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (phone) user.phone = phone;
+    if (address) user.address = address;
+    if (jobTitle) user.jobTitle = jobTitle;
+    if (startDate) user.startDate = startDate;
+
+    await user.save();
+
+    console.log('User updated successfully');
+
+    const updatedUser = await User.findById(userId).select('-password').populate('department');
+    res.json({
+      message: 'User updated successfully',
+      user: updatedUser
+    });
+  } catch (error) {
+    console.error('Error updating user:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });

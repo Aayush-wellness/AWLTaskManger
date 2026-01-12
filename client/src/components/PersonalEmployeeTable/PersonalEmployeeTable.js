@@ -112,11 +112,10 @@ const PersonalEmployeeTable = () => {
   // Save edit
   const handleSaveEdit = useCallback(async () => {
     try {
-      const formData = new FormData();
-      if (editFormData.jobTitle) formData.append('jobTitle', editFormData.jobTitle);
-      if (editFormData.startDate) formData.append('startDate', editFormData.startDate);
-
-      await axios.put('/api/users/profile', formData);
+      await axios.put('/api/users/profile', {
+        jobTitle: editFormData.jobTitle,
+        startDate: editFormData.startDate
+      });
       await fetchPersonalData();
       setEditModalOpen(false);
       setEditFormData({ jobTitle: '', startDate: '' });
