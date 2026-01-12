@@ -6,7 +6,8 @@
   "dependencies": {
     "@craco/craco": "^7.1.0",
     "@mui/x-data-grid": "^8.23.0",
-    "@mui/x-date-pickers": "^8.24.0",
+    "@mui/x-date-pickers": "^7.29.4",
+    "@mui/x-internals": "^8.24.0",
     "@tanstack/react-query": "^5.90.12",
     "axios": "^1.5.0",
     "date-fns": "^2.30.0",
