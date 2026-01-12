@@ -549,4 +549,29 @@ router.put('/profile', [auth, upload.single('avatar')], async (req, res) => {
   }
 });
 
+// Get available employees for a department (employees not in this department)
+router.get('/available-for-department/:departmentId', auth, async (req, res) => {
+  try {
+    const { departmentId } = req.params;
+    
+    console.log('Fetching available employees for department:', departmentId);
+    
+    // Find all employees NOT in this department
+    const availableEmployees = await User.find({
+      department: { $ne: departmentId },
+      role: 'employee'
+    })
+    .select('-password')
+    .populate('department')
+    .sort({ name: 1 });
+    
+    console.log(`Found ${availableEmployees.length} available employees`);
+    
+    res.json(availableEmployees);
+  } catch (error) {
+    console.error('Error fetching available employees:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 module.exports = router;

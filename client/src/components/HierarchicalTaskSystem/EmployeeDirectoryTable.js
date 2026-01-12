@@ -10,17 +10,30 @@ import {
   Typography,
   Skeleton,
   Stack,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
 import { mkConfig, generateCsv, download } from 'export-to-csv';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
+import { ArrowBack as ArrowBackIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import toast from '../../utils/toast';
+import axios from '../../config/axios';
 import EmployeeTaskDetailPanel from './EmployeeTaskDetailPanel';
 import './HierarchicalTaskSystem.css';
 
 const EmployeeDirectoryTable = ({ department, employees, onSelectEmployee, onBack, loading }) => {
   const [expandedRows, setExpandedRows] = useState({});
   const [employeesList, setEmployeesList] = useState(employees);
+  const [showAddEmployeeModal, setShowAddEmployeeModal] = useState(false);
+  const [availableEmployees, setAvailableEmployees] = useState([]);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
+  const [loadingEmployees, setLoadingEmployees] = useState(false);
 
   const handleTasksUpdate = useCallback((employeeId, updatedTasks) => {
     setEmployeesList(prev =>
@@ -29,6 +42,61 @@ const EmployeeDirectoryTable = ({ department, employees, onSelectEmployee, onBac
       )
     );
   }, []);
+
+  const handleOpenAddEmployeeModal = async () => {
+    try {
+      setLoadingEmployees(true);
+      // Fetch all employees not in this department
+      const res = await axios.get(`/api/users/available-for-department/${department._id}`);
+      setAvailableEmployees(res.data);
+      setShowAddEmployeeModal(true);
+    } catch (error) {
+      toast.error('Failed to load available employees: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setLoadingEmployees(false);
+    }
+  };
+
+  const handleAddEmployeeToDepartment = async () => {
+    if (!selectedEmployeeId) {
+      toast.warning('Please select an employee');
+      return;
+    }
+
+    try {
+      // Add employee to department
+      await axios.post(`/api/departments/${department._id}/add-employee`, {
+        employeeId: selectedEmployeeId
+      });
+
+      // Find the employee and add to list
+      const employeeToAdd = availableEmployees.find(emp => emp._id === selectedEmployeeId);
+      if (employeeToAdd) {
+        setEmployeesList(prev => [...prev, employeeToAdd]);
+      }
+
+      toast.success('Employee added to department successfully!');
+      setShowAddEmployeeModal(false);
+      setSelectedEmployeeId('');
+    } catch (error) {
+      toast.error('Failed to add employee: ' + (error.response?.data?.message || error.message));
+    }
+  };
+
+  const handleRemoveEmployeeFromDepartment = useCallback(async (employeeId, employeeName) => {
+    if (window.confirm(`Are you sure you want to remove ${employeeName} from this department?`)) {
+      try {
+        await axios.post(`/api/departments/${department._id}/remove-employee`, {
+          employeeId: employeeId
+        });
+
+        setEmployeesList(prev => prev.filter(emp => emp._id !== employeeId));
+        toast.success('Employee removed from department successfully!');
+      } catch (error) {
+        toast.error('Failed to remove employee: ' + (error.response?.data?.message || error.message));
+      }
+    }
+  }, [department._id]);
 
   const rows = useMemo(() => {
     return employeesList.map((emp) => ({
@@ -75,8 +143,27 @@ const EmployeeDirectoryTable = ({ department, employees, onSelectEmployee, onBac
           </a>
         ),
       },
+      {
+        id: 'actions',
+        header: 'Actions',
+        size: 120,
+        Cell: ({ row }) => (
+          <Button
+            size="small"
+            variant="outlined"
+            color="error"
+            startIcon={<DeleteIcon />}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleRemoveEmployeeFromDepartment(row.original.id, row.original.name);
+            }}
+          >
+            Remove
+          </Button>
+        ),
+      },
     ],
-    []
+    [handleRemoveEmployeeFromDepartment]
   );
 
   const csvConfig = mkConfig({
@@ -274,6 +361,14 @@ const EmployeeDirectoryTable = ({ department, employees, onSelectEmployee, onBac
       {/* Export Buttons */}
       <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <Button
+          variant="contained"
+          onClick={handleOpenAddEmployeeModal}
+          size="small"
+          sx={{ backgroundColor: '#10b981', '&:hover': { backgroundColor: '#059669' } }}
+        >
+          + Add Employee
+        </Button>
+        <Button
           variant="outlined"
           startIcon={<FileDownloadIcon />}
           onClick={handleExportEmployees}
@@ -295,6 +390,46 @@ const EmployeeDirectoryTable = ({ department, employees, onSelectEmployee, onBac
       <Paper elevation={2} sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <MaterialReactTable table={table} />
       </Paper>
+
+      {/* Add Employee Modal */}
+      <Dialog open={showAddEmployeeModal} onClose={() => setShowAddEmployeeModal(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Add Employee to {department.name}</DialogTitle>
+        <DialogContent sx={{ pt: 2 }}>
+          <FormControl fullWidth>
+            <InputLabel>Select Employee</InputLabel>
+            <Select
+              value={selectedEmployeeId}
+              onChange={(e) => setSelectedEmployeeId(e.target.value)}
+              label="Select Employee"
+              disabled={loadingEmployees}
+            >
+              <MenuItem value="">
+                <em>-- Choose an employee --</em>
+              </MenuItem>
+              {availableEmployees.map(emp => (
+                <MenuItem key={emp._id} value={emp._id}>
+                  {emp.name} ({emp.jobTitle}) - {emp.department?.name || 'No Department'}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          {availableEmployees.length === 0 && !loadingEmployees && (
+            <Typography variant="body2" color="textSecondary" sx={{ mt: 2 }}>
+              No employees available from other departments.
+            </Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowAddEmployeeModal(false)}>Cancel</Button>
+          <Button
+            onClick={handleAddEmployeeToDepartment}
+            variant="contained"
+            disabled={!selectedEmployeeId || loadingEmployees}
+          >
+            Add Employee
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

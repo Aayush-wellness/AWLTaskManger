@@ -103,4 +103,79 @@ router.delete('/:id', [auth, adminAuth], async (req, res) => {
   }
 });
 
+// Add employee to department
+router.post('/:departmentId/add-employee', [auth, adminAuth], async (req, res) => {
+  try {
+    const { departmentId } = req.params;
+    const { employeeId } = req.body;
+
+    // Check if department exists
+    const department = await Department.findById(departmentId);
+    if (!department) {
+      return res.status(404).json({ message: 'Department not found' });
+    }
+
+    // Check if employee exists
+    const User = require('../models/User');
+    const employee = await User.findById(employeeId);
+    if (!employee) {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+
+    // Update employee's department
+    employee.department = departmentId;
+    await employee.save();
+
+    console.log(`Employee ${employee.name} added to department ${department.name}`);
+
+    res.json({
+      message: 'Employee added to department successfully',
+      employee: employee
+    });
+  } catch (error) {
+    console.error('Error adding employee to department:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Remove employee from department
+router.post('/:departmentId/remove-employee', [auth, adminAuth], async (req, res) => {
+  try {
+    const { departmentId } = req.params;
+    const { employeeId } = req.body;
+
+    // Check if department exists
+    const department = await Department.findById(departmentId);
+    if (!department) {
+      return res.status(404).json({ message: 'Department not found' });
+    }
+
+    // Check if employee exists
+    const User = require('../models/User');
+    const employee = await User.findById(employeeId);
+    if (!employee) {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+
+    // Check if employee is in this department
+    if (employee.department.toString() !== departmentId) {
+      return res.status(400).json({ message: 'Employee is not in this department' });
+    }
+
+    // Remove employee from department (set to null or a default department)
+    employee.department = null;
+    await employee.save();
+
+    console.log(`Employee ${employee.name} removed from department ${department.name}`);
+
+    res.json({
+      message: 'Employee removed from department successfully',
+      employee: employee
+    });
+  } catch (error) {
+    console.error('Error removing employee from department:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 module.exports = router;

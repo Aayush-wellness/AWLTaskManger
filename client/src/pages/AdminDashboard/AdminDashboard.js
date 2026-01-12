@@ -102,13 +102,13 @@ const AdminDashboard = () => {
           className={activeTab === 'projects' ? 'active' : ''} 
           onClick={() => setActiveTab('projects')}
         >
-          Projects
+          Bulk Task
         </button>
         <button 
           className={activeTab === 'departments' ? 'active' : ''} 
           onClick={() => setActiveTab('departments')}
         >
-          Board
+          Project
         </button>
       </div>
 
