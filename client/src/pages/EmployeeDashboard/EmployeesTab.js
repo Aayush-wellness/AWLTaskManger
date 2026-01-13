@@ -1,40 +1,46 @@
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { Users, Plus, Building2 } from 'lucide-react';
 import EmployeeTable from '../../components/EmployeeTable/EmployeeTable';
 import BulkTaskAssignmentModal from './BulkTaskAssignmentModal';
-import { Button } from '@mui/material';
-import { Plus } from 'lucide-react';
 
 const EmployeesTab = () => {
   const { user } = useAuth();
   const [showBulkTaskModal, setShowBulkTaskModal] = useState(false);
 
   const handleTasksCreated = () => {
-    // Refresh the employee table if needed
     window.location.reload();
   };
 
   return (
-    <div>
-      <div className="header-section">
-        <h2>
-          Employee Hierarchy - {user?.department?.name || user?.department || 'Your Department'}
-        </h2>
-        <Button
-          variant="contained"
-          onClick={() => setShowBulkTaskModal(true)}
-          sx={{
-            backgroundColor: '#5b7cfa',
-            '&:hover': { backgroundColor: '#4c63d2' },
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
-        >
-          <Plus size={20} /> Assign Tasks
-        </Button>
+    <div className="modern-tab-content">
+      {/* Modern Header */}
+      <div className="content-header">
+        <div className="header-left">
+          <div className="header-icon-wrapper" style={{ background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' }}>
+            <Users size={24} />
+          </div>
+          <div className="header-text">
+            <h1>Employee Directory</h1>
+            <div className="header-subtitle">
+              <Building2 size={14} />
+              <span>{user?.department?.name || user?.department || 'Your Department'}</span>
+            </div>
+          </div>
+        </div>
+        <div className="header-right">
+          <button 
+            onClick={() => setShowBulkTaskModal(true)} 
+            className="primary-action-btn"
+          >
+            <Plus size={18} />
+            <span>Assign Tasks</span>
+          </button>
+        </div>
       </div>
-      <div className="employee-table-container">
+
+      {/* Employee Table Container */}
+      <div className="modern-card">
         <EmployeeTable />
       </div>
 
