@@ -10,8 +10,10 @@ import {
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { useAuth } from '../../context/AuthContext';
+import axios from '../../config/axios';
+import toast from '../../utils/toast';
 
-const ProjectDashboard = ({ projects, employees }) => {
+const ProjectDashboard = ({ projects, employees, onProjectsRefresh }) => {
   const { user } = useAuth();
   const [activeView, setActiveView] = useState(0);
   const [tasksData, setTasksData] = useState([]);
@@ -38,6 +40,20 @@ const ProjectDashboard = ({ projects, employees }) => {
     });
     setTasksData(allTasks);
   }, [employees]);
+
+  // Handle project creation
+  const handleCreateProject = async (projectData) => {
+    try {
+      await axios.post('/api/projects', projectData);
+      toast.success('Project created successfully!');
+      if (onProjectsRefresh) {
+        onProjectsRefresh();
+      }
+    } catch (error) {
+      console.error('Error creating project:', error);
+      toast.error('Failed to create project: ' + (error.response?.data?.message || error.message));
+    }
+  };
 
   const isOverdue = (endDate, status) => {
     if (status === 'completed' || !endDate) return false;
@@ -179,7 +195,7 @@ const ProjectDashboard = ({ projects, employees }) => {
 
       {/* Content Views */}
       {activeView === 0 && <AdminOverviewView stats={overallStats} />}
-      {activeView === 1 && <ProjectDashboardView stats={projectStats} setSelectedProject={setSelectedProject} setActiveView={setActiveView} />}
+      {activeView === 1 && <ProjectDashboardView stats={projectStats} setSelectedProject={setSelectedProject} setActiveView={setActiveView} employees={employees} tasksData={tasksData} onCreateProject={handleCreateProject} currentUser={user} />}
       {activeView === 2 && <ProjectDepartmentsView stats={projectStats} employees={employees} tasksData={tasksData} selectedProject={selectedProject} setSelectedProject={setSelectedProject} selectedDepartment={selectedDepartment} setSelectedDepartment={setSelectedDepartment} setSelectedMember={setSelectedMember} setMemberDetailsOpen={setMemberDetailsOpen} />}
       {activeView === 3 && <ViewAssignedTasksView tasksData={tasksData} currentUser={user} getStatusColor={getStatusColor} isOverdue={isOverdue} />}
       {activeView === 4 && <ProductivityTrendsView trend={productivityTrend} />}
@@ -318,74 +334,537 @@ const AdminOverviewView = ({ stats }) => (
 );
 
 // Project Dashboard View
-const ProjectDashboardView = ({ stats, setSelectedProject, setActiveView }) => (
-  <Box>
-    <Box sx={{ mb: 4 }}>
-      <Typography variant="h4" sx={{ fontWeight: 700, color: '#1e293b', mb: 1 }}>Project Dashboard</Typography>
-      <Typography sx={{ color: '#64748b' }}>Click on a project to view department breakdown</Typography>
-    </Box>
+const ProjectDashboardView = ({ stats, setSelectedProject, setActiveView, employees, tasksData, onCreateProject, currentUser }) => {
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [newProjectName, setNewProjectName] = useState('');
+  const [newProjectDescription, setNewProjectDescription] = useState('');
+  const [selectedMemberForTasks, setSelectedMemberForTasks] = useState(null);
+  const [memberTasksModalOpen, setMemberTasksModalOpen] = useState(false);
 
-    <Grid container spacing={3}>
-      {stats.map(project => (
-        <Grid item xs={12} md={6} lg={4} key={project._id}>
-          <Card sx={{ borderRadius: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', cursor: 'pointer', transition: 'all 0.3s ease', border: '2px solid transparent', '&:hover': { transform: 'translateY(-6px)', boxShadow: '0 20px 40px rgba(102, 126, 234, 0.15)', borderColor: '#667eea' } }} onClick={() => { setSelectedProject(project); setActiveView(2); }}>
-            <CardContent sx={{ p: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Box sx={{ width: 48, height: 48, borderRadius: '14px', background: getAvatarColor(project.name), display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: '18px' }}>
-                    {project.name?.charAt(0).toUpperCase()}
+  // Get members working on each project
+  const getProjectMembers = (projectName) => {
+    const projectTasks = tasksData.filter(task => task.project === projectName);
+    const memberMap = {};
+    
+    projectTasks.forEach(task => {
+      if (!memberMap[task.employeeId]) {
+        memberMap[task.employeeId] = {
+          id: task.employeeId,
+          name: task.employeeName,
+          jobTitle: task.employeeJobTitle,
+          department: task.employeeDepartment,
+          tasks: [],
+          completed: 0,
+          inProgress: 0,
+          pending: 0,
+          blocked: 0
+        };
+      }
+      memberMap[task.employeeId].tasks.push(task);
+      if (task.status === 'completed') memberMap[task.employeeId].completed++;
+      else if (task.status === 'in-progress') memberMap[task.employeeId].inProgress++;
+      else if (task.status === 'pending') memberMap[task.employeeId].pending++;
+      else if (task.status === 'blocked') memberMap[task.employeeId].blocked++;
+    });
+    
+    return Object.values(memberMap);
+  };
+
+  const handleCreateProject = async () => {
+    if (!newProjectName.trim()) return;
+    
+    if (onCreateProject) {
+      await onCreateProject({
+        name: newProjectName,
+        description: newProjectDescription
+      });
+    }
+    
+    setCreateModalOpen(false);
+    setNewProjectName('');
+    setNewProjectDescription('');
+  };
+
+  const handleMemberClick = (member, projectName) => {
+    setSelectedMemberForTasks({
+      ...member,
+      projectName
+    });
+    setMemberTasksModalOpen(true);
+  };
+
+  return (
+    <Box>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4 }}>
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: 700, color: '#1e293b', mb: 1 }}>Project Dashboard</Typography>
+          <Typography sx={{ color: '#64748b' }}>Click on a project to view department breakdown, or click on members to see their tasks</Typography>
+        </Box>
+        <Button
+          variant="contained"
+          onClick={() => setCreateModalOpen(true)}
+          sx={{
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            borderRadius: '12px',
+            textTransform: 'none',
+            fontWeight: 600,
+            px: 3,
+            py: 1.5,
+            boxShadow: '0 4px 14px rgba(102, 126, 234, 0.4)',
+            '&:hover': {
+              background: 'linear-gradient(135deg, #5a6fd6 0%, #6a4190 100%)',
+              boxShadow: '0 6px 20px rgba(102, 126, 234, 0.5)',
+            }
+          }}
+        >
+          + Create Project
+        </Button>
+      </Box>
+
+      <Grid container spacing={3}>
+        {stats.map(project => {
+          const projectMembers = getProjectMembers(project.name);
+          
+          return (
+            <Grid item xs={12} md={6} lg={4} key={project._id}>
+              <Card sx={{ 
+                borderRadius: '20px', 
+                boxShadow: '0 1px 3px rgba(0,0,0,0.05)', 
+                transition: 'all 0.3s ease', 
+                border: '2px solid transparent', 
+                '&:hover': { 
+                  boxShadow: '0 20px 40px rgba(102, 126, 234, 0.15)', 
+                  borderColor: '#667eea' 
+                } 
+              }}>
+                <CardContent sx={{ p: 3 }}>
+                  {/* Project Header - Clickable to go to departments */}
+                  <Box 
+                    sx={{ 
+                      display: 'flex', 
+                      alignItems: 'flex-start', 
+                      justifyContent: 'space-between', 
+                      mb: 3,
+                      cursor: 'pointer',
+                      '&:hover': { opacity: 0.8 }
+                    }}
+                    onClick={() => { setSelectedProject(project); setActiveView(2); }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Box sx={{ 
+                        width: 48, 
+                        height: 48, 
+                        borderRadius: '14px', 
+                        background: getAvatarColor(project.name), 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center', 
+                        color: 'white', 
+                        fontWeight: 700, 
+                        fontSize: '18px' 
+                      }}>
+                        {project.name?.charAt(0).toUpperCase()}
+                      </Box>
+                      <Box>
+                        <Typography sx={{ fontWeight: 600, color: '#1e293b', fontSize: '16px' }}>{project.name}</Typography>
+                        <Typography sx={{ fontSize: '13px', color: '#94a3b8' }}>{project.stats.total} tasks</Typography>
+                      </Box>
+                    </Box>
+                    <Box sx={{ 
+                      px: 2, 
+                      py: 1, 
+                      borderRadius: '20px', 
+                      background: project.stats.completionPercentage > 70 ? '#dcfce7' : project.stats.completionPercentage > 40 ? '#dbeafe' : '#fef3c7', 
+                      color: project.stats.completionPercentage > 70 ? '#16a34a' : project.stats.completionPercentage > 40 ? '#1d4ed8' : '#d97706', 
+                      fontWeight: 700, 
+                      fontSize: '14px' 
+                    }}>
+                      {project.stats.completionPercentage}%
+                    </Box>
                   </Box>
-                  <Box>
-                    <Typography sx={{ fontWeight: 600, color: '#1e293b', fontSize: '16px' }}>{project.name}</Typography>
-                    <Typography sx={{ fontSize: '13px', color: '#94a3b8' }}>{project.stats.total} tasks</Typography>
+
+                  {/* Progress Bar */}
+                  <Box sx={{ mb: 3 }}>
+                    <Box sx={{ height: 8, borderRadius: 4, backgroundColor: '#f1f5f9', overflow: 'hidden' }}>
+                      <Box sx={{ 
+                        height: '100%', 
+                        width: `${project.stats.completionPercentage}%`, 
+                        borderRadius: 4, 
+                        background: project.stats.completionPercentage > 70 ? 'linear-gradient(90deg, #22c55e 0%, #16a34a 100%)' : project.stats.completionPercentage > 40 ? 'linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%)' : 'linear-gradient(90deg, #f59e0b 0%, #d97706 100%)', 
+                        transition: 'width 0.5s ease' 
+                      }} />
+                    </Box>
                   </Box>
+
+                  {/* Members List */}
+                  <Box sx={{ mb: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                      <Typography sx={{ fontSize: '13px', fontWeight: 600, color: '#64748b', display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Users size={14} />
+                        Team Members
+                      </Typography>
+                      <Chip 
+                        label={`${projectMembers.length} members`} 
+                        size="small" 
+                        sx={{ backgroundColor: '#e0e7ff', color: '#4338ca', fontWeight: 500, fontSize: '11px' }} 
+                      />
+                    </Box>
+                    
+                    {projectMembers.length === 0 ? (
+                      <Box sx={{ p: 2, backgroundColor: '#f8fafc', borderRadius: '10px', textAlign: 'center' }}>
+                        <Typography sx={{ fontSize: '13px', color: '#94a3b8' }}>No members assigned yet</Typography>
+                      </Box>
+                    ) : (
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, maxHeight: '180px', overflowY: 'auto' }}>
+                        {projectMembers.slice(0, 4).map((member, idx) => (
+                          <Box 
+                            key={member.id || idx}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMemberClick(member, project.name);
+                            }}
+                            sx={{ 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              gap: 2, 
+                              p: 1.5, 
+                              backgroundColor: '#f8fafc', 
+                              borderRadius: '10px',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease',
+                              '&:hover': {
+                                backgroundColor: '#e0e7ff',
+                                transform: 'translateX(4px)'
+                              }
+                            }}
+                          >
+                            <Box sx={{ 
+                              width: 32, 
+                              height: 32, 
+                              borderRadius: '8px', 
+                              background: getAvatarColor(member.name), 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              justifyContent: 'center', 
+                              color: 'white', 
+                              fontWeight: 600, 
+                              fontSize: '12px',
+                              flexShrink: 0
+                            }}>
+                              {member.name?.charAt(0).toUpperCase()}
+                            </Box>
+                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                              <Typography sx={{ fontSize: '13px', fontWeight: 600, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {member.name}
+                              </Typography>
+                              <Typography sx={{ fontSize: '11px', color: '#94a3b8' }}>
+                                {member.tasks.length} task{member.tasks.length !== 1 ? 's' : ''}
+                              </Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', gap: 0.5 }}>
+                              {member.completed > 0 && (
+                                <Box sx={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#22c55e' }} title={`${member.completed} completed`} />
+                              )}
+                              {member.inProgress > 0 && (
+                                <Box sx={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#3b82f6' }} title={`${member.inProgress} in progress`} />
+                              )}
+                              {member.pending > 0 && (
+                                <Box sx={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#f59e0b' }} title={`${member.pending} pending`} />
+                              )}
+                              {member.blocked > 0 && (
+                                <Box sx={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#ef4444' }} title={`${member.blocked} blocked`} />
+                              )}
+                            </Box>
+                            <ArrowRight size={14} style={{ color: '#cbd5e1' }} />
+                          </Box>
+                        ))}
+                        {projectMembers.length > 4 && (
+                          <Typography sx={{ fontSize: '12px', color: '#667eea', fontWeight: 500, textAlign: 'center', py: 1 }}>
+                            +{projectMembers.length - 4} more members
+                          </Typography>
+                        )}
+                      </Box>
+                    )}
+                  </Box>
+
+                  {/* Overdue Warning */}
+                  {project.stats.overdue > 0 && (
+                    <Box sx={{ p: 2, backgroundColor: '#fef2f2', borderRadius: '12px', border: '1px solid #fecaca', display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                      <AlertTriangle size={18} style={{ color: '#ef4444' }} />
+                      <Typography sx={{ color: '#dc2626', fontWeight: 600, fontSize: '13px' }}>{project.stats.overdue} overdue task{project.stats.overdue !== 1 ? 's' : ''}</Typography>
+                    </Box>
+                  )}
+
+                  {/* Footer */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 2, borderTop: '1px solid #f1f5f9' }}>
+                    {project.createdByName && (
+                      <Typography sx={{ fontSize: '11px', color: '#94a3b8' }}>
+                        Created by {project.createdByName}
+                      </Typography>
+                    )}
+                    <Typography 
+                      onClick={() => { setSelectedProject(project); setActiveView(2); }}
+                      sx={{ 
+                        fontSize: '13px', 
+                        color: '#667eea', 
+                        fontWeight: 500, 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: 0.5,
+                        cursor: 'pointer',
+                        '&:hover': { textDecoration: 'underline' }
+                      }}
+                    >
+                      View departments <ArrowRight size={16} />
+                    </Typography>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          );
+        })}
+      </Grid>
+
+      {/* Create Project Modal */}
+      <Dialog 
+        open={createModalOpen} 
+        onClose={() => setCreateModalOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: '20px' } }}
+      >
+        <Box sx={{ 
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+          p: 3, 
+          color: 'white',
+          position: 'relative'
+        }}>
+          <IconButton 
+            onClick={() => setCreateModalOpen(false)}
+            sx={{ position: 'absolute', top: 12, right: 12, color: 'white' }}
+          >
+            <X size={20} />
+          </IconButton>
+          <Typography variant="h5" sx={{ fontWeight: 700 }}>Create New Project</Typography>
+          <Typography sx={{ opacity: 0.9, fontSize: '14px' }}>Add a new project to your workspace</Typography>
+        </Box>
+        <DialogContent sx={{ p: 3 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1 }}>
+            <TextField
+              label="Project Name"
+              value={newProjectName}
+              onChange={(e) => setNewProjectName(e.target.value)}
+              fullWidth
+              required
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+            />
+            <TextField
+              label="Description (Optional)"
+              value={newProjectDescription}
+              onChange={(e) => setNewProjectDescription(e.target.value)}
+              fullWidth
+              multiline
+              rows={3}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+            />
+            <Box sx={{ p: 2, backgroundColor: '#f8fafc', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{ 
+                width: 36, 
+                height: 36, 
+                borderRadius: '10px', 
+                background: getAvatarColor(currentUser?.name), 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                color: 'white', 
+                fontWeight: 600, 
+                fontSize: '14px' 
+              }}>
+                {currentUser?.name?.charAt(0).toUpperCase() || 'A'}
+              </Box>
+              <Box>
+                <Typography sx={{ fontSize: '12px', color: '#64748b' }}>Created by</Typography>
+                <Typography sx={{ fontSize: '14px', fontWeight: 600, color: '#1e293b' }}>{currentUser?.name || 'Admin'}</Typography>
+              </Box>
+            </Box>
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+              <Button 
+                onClick={() => setCreateModalOpen(false)}
+                sx={{ borderRadius: '10px', textTransform: 'none', color: '#64748b' }}
+              >
+                Cancel
+              </Button>
+              <Button 
+                variant="contained"
+                onClick={handleCreateProject}
+                disabled={!newProjectName.trim()}
+                sx={{ 
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  borderRadius: '10px',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  px: 3
+                }}
+              >
+                Create Project
+              </Button>
+            </Box>
+          </Box>
+        </DialogContent>
+      </Dialog>
+
+      {/* Member Tasks Modal */}
+      <Dialog 
+        open={memberTasksModalOpen} 
+        onClose={() => setMemberTasksModalOpen(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: '20px', overflow: 'hidden' } }}
+      >
+        {selectedMemberForTasks && (
+          <>
+            <Box sx={{ 
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+              p: 4, 
+              color: 'white',
+              position: 'relative'
+            }}>
+              <IconButton 
+                onClick={() => setMemberTasksModalOpen(false)}
+                sx={{ position: 'absolute', top: 16, right: 16, color: 'white', backgroundColor: 'rgba(255,255,255,0.1)' }}
+              >
+                <X size={20} />
+              </IconButton>
+              
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                <Box sx={{ 
+                  width: 64, 
+                  height: 64, 
+                  borderRadius: '16px', 
+                  backgroundColor: 'rgba(255,255,255,0.2)',
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  fontSize: '24px',
+                  fontWeight: 700
+                }}>
+                  {selectedMemberForTasks.name?.charAt(0).toUpperCase()}
                 </Box>
-                <Box sx={{ px: 2, py: 1, borderRadius: '20px', background: project.stats.completionPercentage > 70 ? '#dcfce7' : project.stats.completionPercentage > 40 ? '#dbeafe' : '#fef3c7', color: project.stats.completionPercentage > 70 ? '#16a34a' : project.stats.completionPercentage > 40 ? '#1d4ed8' : '#d97706', fontWeight: 700, fontSize: '14px' }}>
-                  {project.stats.completionPercentage}%
+                <Box>
+                  <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>{selectedMemberForTasks.name}</Typography>
+                  <Typography sx={{ opacity: 0.9 }}>{selectedMemberForTasks.jobTitle || 'Team Member'}</Typography>
+                  <Chip 
+                    label={selectedMemberForTasks.projectName} 
+                    size="small" 
+                    sx={{ mt: 1, backgroundColor: 'rgba(255,255,255,0.2)', color: 'white', fontWeight: 500 }} 
+                  />
                 </Box>
               </Box>
 
-              <Box sx={{ mb: 3 }}>
-                <Box sx={{ height: 8, borderRadius: 4, backgroundColor: '#f1f5f9', overflow: 'hidden' }}>
-                  <Box sx={{ height: '100%', width: `${project.stats.completionPercentage}%`, borderRadius: 4, background: project.stats.completionPercentage > 70 ? 'linear-gradient(90deg, #22c55e 0%, #16a34a 100%)' : project.stats.completionPercentage > 40 ? 'linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%)' : 'linear-gradient(90deg, #f59e0b 0%, #d97706 100%)', transition: 'width 0.5s ease' }} />
-                </Box>
-              </Box>
-
-              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1.5, mb: 3 }}>
+              <Box sx={{ display: 'flex', gap: 4, mt: 3 }}>
                 {[
-                  { label: 'Done', value: project.stats.completed, color: '#22c55e', bg: '#f0fdf4' },
-                  { label: 'Active', value: project.stats.inProgress, color: '#3b82f6', bg: '#eff6ff' },
-                  { label: 'Blocked', value: project.stats.blocked, color: '#ef4444', bg: '#fef2f2' },
-                  { label: 'Todo', value: project.stats.notStarted, color: '#f59e0b', bg: '#fffbeb' },
+                  { label: 'Total', value: selectedMemberForTasks.tasks?.length || 0 },
+                  { label: 'Completed', value: selectedMemberForTasks.completed || 0 },
+                  { label: 'In Progress', value: selectedMemberForTasks.inProgress || 0 },
+                  { label: 'Pending', value: selectedMemberForTasks.pending || 0 },
+                  { label: 'Blocked', value: selectedMemberForTasks.blocked || 0 },
                 ].map((stat, idx) => (
-                  <Box key={idx} sx={{ p: 1.5, backgroundColor: stat.bg, borderRadius: '10px', textAlign: 'center' }}>
-                    <Typography sx={{ fontSize: '18px', fontWeight: 700, color: stat.color }}>{stat.value}</Typography>
-                    <Typography sx={{ fontSize: '10px', color: stat.color, fontWeight: 500, textTransform: 'uppercase' }}>{stat.label}</Typography>
+                  <Box key={idx} sx={{ textAlign: 'center' }}>
+                    <Typography sx={{ fontSize: '24px', fontWeight: 700 }}>{stat.value}</Typography>
+                    <Typography sx={{ fontSize: '12px', opacity: 0.8 }}>{stat.label}</Typography>
                   </Box>
                 ))}
               </Box>
+            </Box>
 
-              {project.stats.overdue > 0 && (
-                <Box sx={{ p: 2, backgroundColor: '#fef2f2', borderRadius: '12px', border: '1px solid #fecaca', display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <AlertTriangle size={18} style={{ color: '#ef4444' }} />
-                  <Typography sx={{ color: '#dc2626', fontWeight: 600, fontSize: '13px' }}>{project.stats.overdue} overdue task{project.stats.overdue !== 1 ? 's' : ''}</Typography>
-                </Box>
-              )}
-
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', mt: 2, pt: 2, borderTop: '1px solid #f1f5f9' }}>
-                <Typography sx={{ fontSize: '13px', color: '#667eea', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 0.5 }}>View departments <ArrowRight size={16} /></Typography>
+            <DialogContent sx={{ p: 0 }}>
+              <Box sx={{ p: 3 }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b', mb: 2 }}>
+                  Tasks in {selectedMemberForTasks.projectName}
+                </Typography>
+                
+                {selectedMemberForTasks.tasks?.length === 0 ? (
+                  <Box sx={{ p: 4, textAlign: 'center' }}>
+                    <Typography sx={{ color: '#94a3b8' }}>No tasks assigned in this project</Typography>
+                  </Box>
+                ) : (
+                  <TableContainer>
+                    <Table>
+                      <TableHead>
+                        <TableRow sx={{ backgroundColor: '#f8fafc' }}>
+                          <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Task Name</TableCell>
+                          <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Status</TableCell>
+                          <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Start Date</TableCell>
+                          <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Due Date</TableCell>
+                          <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Assigned By</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {selectedMemberForTasks.tasks?.map((task, idx) => (
+                          <TableRow key={idx} sx={{ '&:hover': { backgroundColor: '#f8fafc' } }}>
+                            <TableCell>
+                              <Typography sx={{ fontWeight: 500, color: '#334155' }}>{task.taskName}</Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Chip 
+                                label={task.status} 
+                                size="small" 
+                                sx={{ 
+                                  backgroundColor: task.status === 'completed' ? '#dcfce7' : task.status === 'in-progress' ? '#dbeafe' : task.status === 'blocked' ? '#fee2e2' : '#fef3c7',
+                                  color: task.status === 'completed' ? '#166534' : task.status === 'in-progress' ? '#1e40af' : task.status === 'blocked' ? '#991b1b' : '#92400e',
+                                  fontWeight: 600,
+                                  fontSize: '11px',
+                                  textTransform: 'capitalize'
+                                }} 
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Typography sx={{ fontSize: '13px', color: '#64748b' }}>
+                                {task.startDate ? new Date(task.startDate).toLocaleDateString() : '-'}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Typography sx={{ fontSize: '13px', color: '#64748b' }}>
+                                {task.endDate ? new Date(task.endDate).toLocaleDateString() : '-'}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Typography sx={{ fontSize: '13px', color: '#64748b' }}>
+                                {task.AssignedBy || '-'}
+                              </Typography>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                )}
               </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-      ))}
-    </Grid>
-  </Box>
-);
+            </DialogContent>
+          </>
+        )}
+      </Dialog>
+    </Box>
+  );
+};
 
 
-// Project Departments View
+// Project Departments View - Enhanced with Admin Features
 const ProjectDepartmentsView = ({ stats, employees, tasksData, selectedProject, setSelectedProject, selectedDepartment, setSelectedDepartment, setSelectedMember, setMemberDetailsOpen }) => {
+  const { user: currentUser } = useAuth();
+  const [assignTaskModalOpen, setAssignTaskModalOpen] = useState(false);
+  const [selectedMemberForAssign, setSelectedMemberForAssign] = useState(null);
+  const [taskForm, setTaskForm] = useState({
+    taskName: '',
+    project: '',
+    startDate: '',
+    endDate: '',
+    priority: 'Medium',
+    remark: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [statusUpdateLoading, setStatusUpdateLoading] = useState({});
+
   const project = selectedProject || stats[0];
   if (!project) return (
     <Box sx={{ p: 6, textAlign: 'center' }}>
@@ -417,12 +896,102 @@ const ProjectDepartmentsView = ({ stats, employees, tasksData, selectedProject, 
   const departments = Object.values(departmentsInProject);
   const selectedDeptData = selectedDepartment ? departmentsInProject[selectedDepartment] : null;
 
+  // Workload helper - determines workload level based on task count
+  const getWorkloadLevel = (taskCount) => {
+    if (taskCount <= 5) return { level: 'balanced', color: '#22c55e', bg: '#dcfce7', label: 'Balanced' };
+    if (taskCount <= 10) return { level: 'moderate', color: '#f59e0b', bg: '#fef3c7', label: 'Moderate' };
+    return { level: 'overloaded', color: '#ef4444', bg: '#fee2e2', label: 'Overloaded' };
+  };
+
+  // Handle opening assign task modal
+  const handleOpenAssignTask = (member, e) => {
+    e.stopPropagation();
+    setSelectedMemberForAssign(member);
+    setTaskForm({
+      taskName: '',
+      project: project.name,
+      startDate: new Date().toISOString().split('T')[0],
+      endDate: '',
+      priority: 'Medium',
+      remark: ''
+    });
+    setAssignTaskModalOpen(true);
+  };
+
+  // Handle task assignment
+  const handleAssignTask = async () => {
+    if (!taskForm.taskName.trim() || !selectedMemberForAssign) return;
+    
+    setIsSubmitting(true);
+    try {
+      await axios.post(`/api/users/${selectedMemberForAssign._id}/tasks`, {
+        taskName: taskForm.taskName,
+        project: taskForm.project,
+        startDate: taskForm.startDate,
+        endDate: taskForm.endDate,
+        priority: taskForm.priority,
+        remark: taskForm.remark,
+        status: 'pending',
+        AssignedBy: currentUser?.name || 'Admin'
+      });
+
+      // Send notification to employee
+      try {
+        await axios.post('/api/notifications/create', {
+          recipientId: selectedMemberForAssign._id,
+          type: 'TASK_ASSIGNED',
+          message: `${currentUser?.name || 'Admin'} assigned you a new task: "${taskForm.taskName}"`,
+          metadata: {
+            taskName: taskForm.taskName,
+            projectName: taskForm.project,
+            assignedBy: currentUser?.name || 'Admin'
+          }
+        });
+      } catch (notifError) {
+        console.error('Failed to send notification:', notifError);
+      }
+
+      toast.success(`Task assigned to ${selectedMemberForAssign.name}`);
+      setAssignTaskModalOpen(false);
+      setSelectedMemberForAssign(null);
+      // Trigger refresh - parent component should handle this
+      window.location.reload();
+    } catch (error) {
+      console.error('Error assigning task:', error);
+      toast.error('Failed to assign task: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handle inline status update
+  const handleStatusUpdate = async (task, newStatus, e) => {
+    e.stopPropagation();
+    const taskId = task._id || task.id;
+    setStatusUpdateLoading(prev => ({ ...prev, [taskId]: true }));
+    
+    try {
+      await axios.put(`/api/users/${task.employeeId}/update-task/${taskId}`, {
+        status: newStatus
+      });
+      
+      toast.success(`Task status updated to ${newStatus}`);
+      // Trigger refresh
+      window.location.reload();
+    } catch (error) {
+      console.error('Error updating status:', error);
+      toast.error('Failed to update status');
+    } finally {
+      setStatusUpdateLoading(prev => ({ ...prev, [taskId]: false }));
+    }
+  };
+
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 4 }}>
         <Box>
           <Typography variant="h4" sx={{ fontWeight: 700, color: '#1e293b', mb: 0.5 }}>{project.name}</Typography>
-          <Typography sx={{ color: '#64748b' }}>Department & Team Overview</Typography>
+          <Typography sx={{ color: '#64748b' }}>Department & Team Overview - Assign tasks and manage workload</Typography>
         </Box>
         {selectedDepartment && (
           <Button onClick={() => setSelectedDepartment(null)} variant="outlined" startIcon={<ArrowRight size={16} style={{ transform: 'rotate(180deg)' }} />}
@@ -491,7 +1060,7 @@ const ProjectDepartmentsView = ({ stats, employees, tasksData, selectedProject, 
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
               <Box>
                 <Typography variant="h6" sx={{ fontWeight: 600, color: '#334155' }}>{selectedDeptData.name} Team</Typography>
-                <Typography sx={{ fontSize: '13px', color: '#94a3b8' }}>Click on a member to view tasks</Typography>
+                <Typography sx={{ fontSize: '13px', color: '#94a3b8' }}>Click on a member to view tasks, or assign new tasks</Typography>
               </Box>
               <Chip label={`${selectedDeptData.members.length} members`} size="small" sx={{ backgroundColor: '#fef3c7', color: '#92400e', fontWeight: 500 }} />
             </Box>
@@ -504,41 +1073,137 @@ const ProjectDepartmentsView = ({ stats, employees, tasksData, selectedProject, 
                 const memberBlocked = memberTasks.filter(t => t.status === 'blocked').length;
                 const memberPending = memberTasks.filter(t => t.status === 'pending').length;
                 const memberCompletion = memberTasks.length > 0 ? Math.round((memberCompleted / memberTasks.length) * 100) : 0;
+                const activeTasks = memberInProgress + memberPending + memberBlocked;
+                const workload = getWorkloadLevel(activeTasks);
 
                 return (
-                  <Card key={member._id} sx={{ cursor: 'pointer', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', transition: 'all 0.2s ease', '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 8px 25px rgba(0,0,0,0.08)', borderColor: '#c7d2fe' } }}
-                    onClick={() => {
-                      setSelectedMember({ employeeId: member._id, employeeName: member.name, employeeJobTitle: member.jobTitle, tasks: memberTasks, completed: memberCompleted, inProgress: memberInProgress, blocked: memberBlocked, pending: memberPending, overdue: memberTasks.filter(t => t.status !== 'completed' && t.endDate && new Date(t.endDate) < new Date()).length });
-                      setMemberDetailsOpen(true);
-                    }}>
+                  <Card key={member._id} sx={{ borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', transition: 'all 0.2s ease', '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 8px 25px rgba(0,0,0,0.08)', borderColor: '#c7d2fe' } }}>
                     <CardContent sx={{ p: 3 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                        <Box sx={{ width: 56, height: 56, borderRadius: '14px', background: getAvatarColor(member.name), display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: '20px', flexShrink: 0 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 3 }}>
+                        <Box 
+                          sx={{ width: 56, height: 56, borderRadius: '14px', background: getAvatarColor(member.name), display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: '20px', flexShrink: 0, cursor: 'pointer' }}
+                          onClick={() => {
+                            setSelectedMember({ employeeId: member._id, employeeName: member.name, employeeJobTitle: member.jobTitle, tasks: memberTasks, completed: memberCompleted, inProgress: memberInProgress, blocked: memberBlocked, pending: memberPending, overdue: memberTasks.filter(t => t.status !== 'completed' && t.endDate && new Date(t.endDate) < new Date()).length });
+                            setMemberDetailsOpen(true);
+                          }}
+                        >
                           {member.name?.charAt(0).toUpperCase()}
                         </Box>
                         <Box sx={{ flex: 1 }}>
                           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                            <Box>
+                            <Box 
+                              sx={{ cursor: 'pointer' }}
+                              onClick={() => {
+                                setSelectedMember({ employeeId: member._id, employeeName: member.name, employeeJobTitle: member.jobTitle, tasks: memberTasks, completed: memberCompleted, inProgress: memberInProgress, blocked: memberBlocked, pending: memberPending, overdue: memberTasks.filter(t => t.status !== 'completed' && t.endDate && new Date(t.endDate) < new Date()).length });
+                                setMemberDetailsOpen(true);
+                              }}
+                            >
                               <Typography sx={{ fontWeight: 600, color: '#1e293b' }}>{member.name}</Typography>
                               <Typography sx={{ fontSize: '13px', color: '#94a3b8' }}>{member.jobTitle || 'Team Member'}</Typography>
                             </Box>
-                            <Box sx={{ px: 2, py: 0.75, borderRadius: '20px', backgroundColor: memberCompletion > 70 ? '#dcfce7' : memberCompletion > 40 ? '#dbeafe' : '#fee2e2', color: memberCompletion > 70 ? '#166534' : memberCompletion > 40 ? '#1e40af' : '#991b1b', fontWeight: 600, fontSize: '14px' }}>
-                              {memberCompletion}%
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                              {/* Workload Indicator */}
+                              <Box sx={{ px: 2, py: 0.5, borderRadius: '20px', backgroundColor: workload.bg, color: workload.color, fontWeight: 600, fontSize: '12px', display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Box sx={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: workload.color }} />
+                                {workload.label}
+                              </Box>
+                              {/* Completion Badge */}
+                              <Box sx={{ px: 2, py: 0.75, borderRadius: '20px', backgroundColor: memberCompletion > 70 ? '#dcfce7' : memberCompletion > 40 ? '#dbeafe' : '#fee2e2', color: memberCompletion > 70 ? '#166534' : memberCompletion > 40 ? '#1e40af' : '#991b1b', fontWeight: 600, fontSize: '14px' }}>
+                                {memberCompletion}%
+                              </Box>
                             </Box>
                           </Box>
+                          
+                          {/* Progress Bar */}
                           <Box sx={{ height: 6, borderRadius: 3, backgroundColor: '#f1f5f9', overflow: 'hidden', mb: 2 }}>
                             <Box sx={{ height: '100%', width: `${memberCompletion}%`, borderRadius: 3, background: memberCompletion > 70 ? 'linear-gradient(90deg, #22c55e 0%, #16a34a 100%)' : memberCompletion > 40 ? 'linear-gradient(90deg, #3b82f6 0%, #2563eb 100%)' : 'linear-gradient(90deg, #f87171 0%, #ef4444 100%)' }} />
                           </Box>
-                          <Box sx={{ display: 'flex', gap: 2 }}>
-                            {[{ label: 'Done', value: memberCompleted, color: '#22c55e' }, { label: 'Active', value: memberInProgress, color: '#3b82f6' }, { label: 'Blocked', value: memberBlocked, color: '#ef4444' }, { label: 'Todo', value: memberPending, color: '#f59e0b' }].map((stat, idx) => (
-                              <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                <Box sx={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: stat.color }} />
-                                <Typography sx={{ fontSize: '12px', color: '#64748b' }}>{stat.value} {stat.label}</Typography>
-                              </Box>
-                            ))}
+                          
+                          {/* Stats Row */}
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Box sx={{ display: 'flex', gap: 2 }}>
+                              {[{ label: 'Done', value: memberCompleted, color: '#22c55e' }, { label: 'Active', value: memberInProgress, color: '#3b82f6' }, { label: 'Blocked', value: memberBlocked, color: '#ef4444' }, { label: 'Todo', value: memberPending, color: '#f59e0b' }].map((stat, idx) => (
+                                <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                  <Box sx={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: stat.color }} />
+                                  <Typography sx={{ fontSize: '12px', color: '#64748b' }}>{stat.value} {stat.label}</Typography>
+                                </Box>
+                              ))}
+                            </Box>
+                            
+                            {/* Assign Task Button */}
+                            <Button
+                              size="small"
+                              variant="contained"
+                              onClick={(e) => handleOpenAssignTask(member, e)}
+                              sx={{
+                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                borderRadius: '8px',
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                fontSize: '12px',
+                                px: 2,
+                                py: 0.75,
+                                boxShadow: '0 2px 8px rgba(102, 126, 234, 0.3)',
+                                '&:hover': {
+                                  background: 'linear-gradient(135deg, #5a6fd6 0%, #6a4190 100%)',
+                                  boxShadow: '0 4px 12px rgba(102, 126, 234, 0.4)',
+                                }
+                              }}
+                            >
+                              + Assign Task
+                            </Button>
                           </Box>
+
+                          {/* Quick Task Status Updates - Show recent tasks */}
+                          {memberTasks.length > 0 && (
+                            <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid #f1f5f9' }}>
+                              <Typography sx={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600, mb: 1, textTransform: 'uppercase' }}>Recent Tasks</Typography>
+                              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                {memberTasks.slice(0, 3).map((task, idx) => (
+                                  <Box key={task._id || idx} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, backgroundColor: '#f8fafc', borderRadius: '8px' }}>
+                                    <Typography sx={{ fontSize: '13px', color: '#334155', fontWeight: 500, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', mr: 2 }}>
+                                      {task.taskName}
+                                    </Typography>
+                                    <FormControl size="small" sx={{ minWidth: 110 }}>
+                                      <Select
+                                        value={task.status}
+                                        onChange={(e) => handleStatusUpdate(task, e.target.value, e)}
+                                        disabled={statusUpdateLoading[task._id || task.id]}
+                                        sx={{
+                                          fontSize: '11px',
+                                          fontWeight: 600,
+                                          borderRadius: '6px',
+                                          height: '28px',
+                                          backgroundColor: task.status === 'completed' ? '#dcfce7' : task.status === 'in-progress' ? '#dbeafe' : task.status === 'blocked' ? '#fee2e2' : '#fef3c7',
+                                          color: task.status === 'completed' ? '#166534' : task.status === 'in-progress' ? '#1e40af' : task.status === 'blocked' ? '#991b1b' : '#92400e',
+                                          '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+                                          '& .MuiSelect-select': { py: 0.5 }
+                                        }}
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        <MenuItem value="pending">Pending</MenuItem>
+                                        <MenuItem value="in-progress">In Progress</MenuItem>
+                                        <MenuItem value="completed">Completed</MenuItem>
+                                        <MenuItem value="blocked">Blocked</MenuItem>
+                                      </Select>
+                                    </FormControl>
+                                  </Box>
+                                ))}
+                                {memberTasks.length > 3 && (
+                                  <Typography 
+                                    sx={{ fontSize: '12px', color: '#667eea', fontWeight: 500, textAlign: 'center', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
+                                    onClick={() => {
+                                      setSelectedMember({ employeeId: member._id, employeeName: member.name, employeeJobTitle: member.jobTitle, tasks: memberTasks, completed: memberCompleted, inProgress: memberInProgress, blocked: memberBlocked, pending: memberPending, overdue: memberTasks.filter(t => t.status !== 'completed' && t.endDate && new Date(t.endDate) < new Date()).length });
+                                      setMemberDetailsOpen(true);
+                                    }}
+                                  >
+                                    +{memberTasks.length - 3} more tasks
+                                  </Typography>
+                                )}
+                              </Box>
+                            </Box>
+                          )}
                         </Box>
-                        <ArrowRight size={20} style={{ color: '#cbd5e1' }} />
                       </Box>
                     </CardContent>
                   </Card>
@@ -548,6 +1213,140 @@ const ProjectDepartmentsView = ({ stats, employees, tasksData, selectedProject, 
           </Grid>
         )}
       </Grid>
+
+      {/* Assign Task Modal */}
+      <Dialog 
+        open={assignTaskModalOpen} 
+        onClose={() => setAssignTaskModalOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: '20px' } }}
+      >
+        <Box sx={{ 
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+          p: 3, 
+          color: 'white',
+          position: 'relative'
+        }}>
+          <IconButton 
+            onClick={() => setAssignTaskModalOpen(false)}
+            sx={{ position: 'absolute', top: 12, right: 12, color: 'white' }}
+          >
+            <X size={20} />
+          </IconButton>
+          <Typography variant="h5" sx={{ fontWeight: 700 }}>Assign New Task</Typography>
+          <Typography sx={{ opacity: 0.9, fontSize: '14px' }}>
+            Assign a task to {selectedMemberForAssign?.name}
+          </Typography>
+        </Box>
+        <DialogContent sx={{ p: 3 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1 }}>
+            <TextField
+              label="Task Name"
+              value={taskForm.taskName}
+              onChange={(e) => setTaskForm(prev => ({ ...prev, taskName: e.target.value }))}
+              fullWidth
+              required
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+            />
+            <TextField
+              label="Project"
+              value={taskForm.project}
+              onChange={(e) => setTaskForm(prev => ({ ...prev, project: e.target.value }))}
+              fullWidth
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+            />
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <TextField
+                label="Start Date"
+                type="date"
+                value={taskForm.startDate}
+                onChange={(e) => setTaskForm(prev => ({ ...prev, startDate: e.target.value }))}
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+              />
+              <TextField
+                label="End Date"
+                type="date"
+                value={taskForm.endDate}
+                onChange={(e) => setTaskForm(prev => ({ ...prev, endDate: e.target.value }))}
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+              />
+            </Box>
+            <FormControl fullWidth>
+              <InputLabel>Priority</InputLabel>
+              <Select
+                value={taskForm.priority}
+                label="Priority"
+                onChange={(e) => setTaskForm(prev => ({ ...prev, priority: e.target.value }))}
+                sx={{ borderRadius: '12px' }}
+              >
+                <MenuItem value="Low">Low</MenuItem>
+                <MenuItem value="Medium">Medium</MenuItem>
+                <MenuItem value="High">High</MenuItem>
+                <MenuItem value="Urgent">Urgent</MenuItem>
+              </Select>
+            </FormControl>
+            <TextField
+              label="Remark (Optional)"
+              value={taskForm.remark}
+              onChange={(e) => setTaskForm(prev => ({ ...prev, remark: e.target.value }))}
+              fullWidth
+              multiline
+              rows={2}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+            />
+            
+            {/* Assigned By Info */}
+            <Box sx={{ p: 2, backgroundColor: '#f8fafc', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{ 
+                width: 36, 
+                height: 36, 
+                borderRadius: '10px', 
+                background: getAvatarColor(currentUser?.name), 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                color: 'white', 
+                fontWeight: 600, 
+                fontSize: '14px' 
+              }}>
+                {currentUser?.name?.charAt(0).toUpperCase() || 'A'}
+              </Box>
+              <Box>
+                <Typography sx={{ fontSize: '12px', color: '#64748b' }}>Assigned by</Typography>
+                <Typography sx={{ fontSize: '14px', fontWeight: 600, color: '#1e293b' }}>{currentUser?.name || 'Admin'}</Typography>
+              </Box>
+            </Box>
+
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+              <Button 
+                onClick={() => setAssignTaskModalOpen(false)}
+                sx={{ borderRadius: '10px', textTransform: 'none', color: '#64748b' }}
+              >
+                Cancel
+              </Button>
+              <Button 
+                variant="contained"
+                onClick={handleAssignTask}
+                disabled={!taskForm.taskName.trim() || isSubmitting}
+                sx={{ 
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  borderRadius: '10px',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  px: 3
+                }}
+              >
+                {isSubmitting ? 'Assigning...' : 'Assign Task'}
+              </Button>
+            </Box>
+          </Box>
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };

@@ -174,7 +174,7 @@ const AdminDashboard = () => {
           )}
 
           {activeTab === 'projects-dashboard' && (
-            <ProjectDashboard projects={projects} employees={employees} />
+            <ProjectDashboard projects={projects} employees={employees} onProjectsRefresh={fetchData} />
           )}
         </div>
       </div>

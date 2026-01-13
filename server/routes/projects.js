@@ -7,7 +7,9 @@ const { auth, adminAuth } = require('../middleware/auth');
 // Get all projects with vendor counts and document links
 router.get('/', auth, async (req, res) => {
   try {
-    const projects = await Project.find().sort({ createdAt: -1 });
+    const projects = await Project.find()
+      .populate('createdBy', 'name email')
+      .sort({ createdAt: -1 });
     
     // Get vendor counts and document links for each project
     const projectsWithVendors = await Promise.all(
@@ -35,7 +37,8 @@ router.get('/', auth, async (req, res) => {
           ...project.toObject(),
           vendorCount,
           documentLinks: allDocumentLinks,
-          documentCount: allDocumentLinks.length
+          documentCount: allDocumentLinks.length,
+          createdByName: project.createdBy?.name || null
         };
       })
     );
