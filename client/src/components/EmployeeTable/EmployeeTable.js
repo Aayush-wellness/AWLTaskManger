@@ -1,7 +1,7 @@
 import { useMemo, useState, useCallback, useEffect } from 'react';
 import { MaterialReactTable, useMaterialReactTable } from 'material-react-table';
 import { Box, IconButton } from '@mui/material';
-import { Edit, Delete, EditNote, DeleteSweep } from '@mui/icons-material';
+import { Edit, Delete } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
 import axios from '../../config/axios';
 import toast from '../../utils/toast';
@@ -12,7 +12,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import EmployeeDetailPanel from './EmployeeDetailPanel';
 import AddEmployeeModal from './AddEmployeeModal';
 import EditEmployeeModal from './EditEmployeeModal';
-import BulkEditModal from './BulkEditModal';
 
 const EmployeeTableComponent = () => {
   const { user } = useAuth();
@@ -35,15 +34,6 @@ const EmployeeTableComponent = () => {
     firstName: '',
     lastName: '',
     email: '',
-    department: '',
-    jobTitle: '',
-    startDate: ''
-  });
-
-  // Bulk Edit Modal State
-  const [bulkEditModalOpen, setBulkEditModalOpen] = useState(false);
-  const [selectedRows, setSelectedRows] = useState({});
-  const [bulkEditData, setBulkEditData] = useState({
     department: '',
     jobTitle: '',
     startDate: ''
@@ -203,79 +193,6 @@ const EmployeeTableComponent = () => {
     await fetchDepartmentEmployees();
   }, [fetchDepartmentEmployees]);
 
-  // BULK OPERATIONS handlers
-  const handleBulkEdit = useCallback(() => {
-    const selectedEmployeeIds = Object.keys(selectedRows);
-    if (selectedEmployeeIds.length === 0) {
-      toast.warning('Please select employees to edit');
-      return;
-    }
-
-    setBulkEditData({
-      department: '',
-      jobTitle: '',
-      startDate: ''
-    });
-    setBulkEditModalOpen(true);
-  }, [selectedRows]);
-
-  const handleBulkDelete = useCallback(() => {
-    const selectedEmployeeIds = Object.keys(selectedRows);
-    if (selectedEmployeeIds.length === 0) {
-      toast.warning('Please select employees to delete');
-      return;
-    }
-
-    if (window.confirm(`Are you sure you want to delete ${selectedEmployeeIds.length} selected employees?`)) {
-      setLocalEmployees(prevEmployees => {
-        return prevEmployees.filter(employee => !selectedEmployeeIds.includes(employee.id));
-      });
-
-      setSelectedRows({});
-      toast.success(`${selectedEmployeeIds.length} employees deleted successfully!`);
-    }
-  }, [selectedRows]);
-
-  const handleBulkEditInputChange = useCallback((field, value) => {
-    setBulkEditData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  }, []);
-
-  const handleSaveBulkEdit = useCallback(() => {
-    const selectedEmployeeIds = Object.keys(selectedRows);
-
-    const updateData = {};
-    if (bulkEditData.department?.trim()) updateData.department = bulkEditData.department;
-    if (bulkEditData.jobTitle?.trim()) updateData.jobTitle = bulkEditData.jobTitle;
-    if (bulkEditData.startDate?.trim()) updateData.startDate = bulkEditData.startDate;
-
-    if (Object.keys(updateData).length === 0) {
-      toast.warning('Please fill at least one field to update');
-      return;
-    }
-
-    setLocalEmployees(prevEmployees => {
-      return prevEmployees.map(employee => {
-        if (selectedEmployeeIds.includes(employee.id)) {
-          return { ...employee, ...updateData };
-        }
-        return employee;
-      });
-    });
-
-    setBulkEditModalOpen(false);
-    setSelectedRows({});
-    setBulkEditData({
-      department: '',
-      jobTitle: '',
-      startDate: ''
-    });
-
-    toast.success(`${selectedEmployeeIds.length} employees updated successfully!`);
-  }, [selectedRows, bulkEditData]);
-
   // UPDATE EMPLOYEE FROM DETAIL PANEL
   const updateEmployeeFromDetail = useCallback((employeeId, updatedFields) => {
     setLocalEmployees(prevEmployees => {
@@ -380,7 +297,7 @@ const EmployeeTableComponent = () => {
     enableGrouping: true,
     enableColumnPinning: true,
     enableFacetedValues: true,
-    enableRowSelection: true,
+    enableRowSelection: false,
     enableEditing: false,
     enableRowActions: true,
 
@@ -478,106 +395,71 @@ const EmployeeTableComponent = () => {
       },
     }),
 
-    renderRowActions: ({ row }) => (
-      <Box sx={{ display: 'flex', flexWrap: 'nowrap', gap: '8px' }}>
-        {user && user.id === row.original.id && (
+    renderRowActions: ({ row }) => {
+      // Check if this row is the current logged-in user
+      const userId = user?.id || user?._id;
+      const rowId = row.original.id || row.original._id;
+      const isCurrentUser = userId && rowId && userId === rowId;
+      
+      // Only show actions for the logged-in user's own row
+      if (!isCurrentUser) {
+        return null;
+      }
+      
+      return (
+        <Box sx={{ display: 'flex', flexWrap: 'nowrap', gap: '8px' }}>
           <IconButton
             color="secondary"
-            onClick={() => handleEditEmployee(row)}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleEditEmployee(row);
+            }}
+            title="Edit your profile"
           >
             <Edit />
           </IconButton>
-        )}
-        {user && user.id === row.original.id && (
           <IconButton
             color="error"
-            onClick={() => openDeleteConfirmModal(row)}
+            onClick={(e) => {
+              e.stopPropagation();
+              openDeleteConfirmModal(row);
+            }}
+            title="Delete your account"
           >
             <Delete />
           </IconButton>
-        )}
-      </Box>
-    ),
-
-    renderTopToolbarCustomActions: ({ table }) => {
-      const selectedRowCount = Object.keys(table.getState().rowSelection).length;
-
-      return (
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <button
-            onClick={handleAddEmployee}
-            style={{
-              padding: '8px 16px',
-              background: '#007bff',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}
-            title="Add New Employee"
-          >
-            + Add Employee
-          </button>
-
-          {selectedRowCount > 0 && (
-            <>
-              <span style={{ fontSize: '14px', color: '#666' }}>
-                {selectedRowCount} selected
-              </span>
-              <button
-                onClick={handleBulkEdit}
-                style={{
-                  padding: '8px 16px',
-                  background: '#28a745',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
-                title="Bulk Edit Selected"
-              >
-                <EditNote style={{ fontSize: '16px' }} />
-                Bulk Edit
-              </button>
-              <button
-                onClick={handleBulkDelete}
-                style={{
-                  padding: '8px 16px',
-                  background: '#dc3545',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
-                title="Bulk Delete Selected"
-              >
-                <DeleteSweep style={{ fontSize: '16px' }} />
-                Bulk Delete
-              </button>
-            </>
-          )}
-        </div>
+        </Box>
       );
     },
+
+    renderTopToolbarCustomActions: () => (
+      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <button
+          onClick={handleAddEmployee}
+          style={{
+            padding: '8px 16px',
+            background: '#007bff',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}
+          title="Add New Employee"
+        >
+          + Add Employee
+        </button>
+      </div>
+    ),
 
     state: {
       isLoading: isLoading,
       isSaving: false,
       showAlertBanner: !!error,
       showProgressBars: isLoading,
-      rowSelection: selectedRows,
     },
-
-    onRowSelectionChange: setSelectedRows,
   });
 
   return (
@@ -601,16 +483,6 @@ const EmployeeTableComponent = () => {
         onInputChange={handleAddInputChange}
         user={user}
         onEmployeeAdded={handleAddEmployeeSuccess}
-      />
-
-      {/* Bulk Edit Modal */}
-      <BulkEditModal
-        isOpen={bulkEditModalOpen}
-        onClose={() => setBulkEditModalOpen(false)}
-        formData={bulkEditData}
-        onInputChange={handleBulkEditInputChange}
-        onSave={handleSaveBulkEdit}
-        selectedCount={Object.keys(selectedRows).length}
       />
     </>
   );
