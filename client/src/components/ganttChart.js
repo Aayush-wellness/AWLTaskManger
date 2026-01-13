@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Calendar, Clock, CheckCircle, AlertCircle, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
+import { Calendar, Clock, CheckCircle, AlertCircle, ZoomIn, ZoomOut } from 'lucide-react';
 
 const GanttChart = ({ ganttTasks, ganttLinks }) => {
   const [tasks] = useState(ganttTasks || []);
