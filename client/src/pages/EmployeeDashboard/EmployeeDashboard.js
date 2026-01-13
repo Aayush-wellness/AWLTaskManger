@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Settings, ClipboardList, FolderKanban, Users, Search, Bell } from 'lucide-react';
+import { LogOut, Settings, ClipboardList, FolderKanban, Users, Search } from 'lucide-react';
 import { getSmallAvatarUrl } from '../../utils/avatarUtils';
 import axios from '../../config/axios';
 import NotificationBell from '../../components/NotificationBell';

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, LayoutDashboard, ListTodo, FolderPlus, BarChart3, Search, Bell } from 'lucide-react';
+import { LogOut, LayoutDashboard, ListTodo, FolderPlus, BarChart3, Search } from 'lucide-react';
 import axios from '../../config/axios';
 import NotificationBell from '../../components/NotificationBell';
 import DashboardTab from './DashboardTab';

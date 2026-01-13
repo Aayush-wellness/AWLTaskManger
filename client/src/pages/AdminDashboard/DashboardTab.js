@@ -1,4 +1,4 @@
-import { FolderKanban, Users, Briefcase, CheckCircle, Clock, AlertTriangle, TrendingUp, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { FolderKanban, Users, CheckCircle, Clock, AlertTriangle, TrendingUp, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts';
 
 const DashboardTab = ({ tasks, employees, onEmployeeClick }) => {

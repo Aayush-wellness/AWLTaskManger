@@ -1,15 +1,14 @@
 import { useState, useEffect, useMemo } from 'react';
 import {
-  Box, Card, CardContent, Typography, LinearProgress, Chip, Tab, Tabs, Grid,
+  Box, Card, CardContent, Typography, Chip, Tab, Tabs, Grid,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Dialog,
   DialogContent, Button, IconButton, TextField, MenuItem, Select, FormControl, InputLabel,
 } from '@mui/material';
 import { 
-  AlertCircle, CheckCircle, Clock, AlertTriangle, Target, X, Users, 
-  TrendingUp, FolderKanban, BarChart3, ArrowRight, Calendar, Search, Eye, Filter
+  CheckCircle, Clock, AlertTriangle, Target, X, Users, 
+  TrendingUp, FolderKanban, BarChart3, ArrowRight, Calendar, Search, Eye
 } from 'lucide-react';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
-import axios from '../../config/axios';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { useAuth } from '../../context/AuthContext';
 
 const ProjectDashboard = ({ projects, employees }) => {
