@@ -461,6 +461,23 @@ const EmployeeTableComponent = () => {
       }
     },
 
+    // Make entire row clickable to expand/collapse
+    muiTableBodyRowProps: ({ row }) => ({
+      onClick: (event) => {
+        // Don't toggle if clicking on buttons, links, checkboxes, or interactive elements
+        if (event.target.closest('button, a, input, .MuiIconButton-root, .MuiCheckbox-root')) {
+          return;
+        }
+        row.toggleExpanded();
+      },
+      sx: {
+        cursor: 'pointer',
+        '&:hover': {
+          backgroundColor: 'rgba(91, 124, 250, 0.04)',
+        },
+      },
+    }),
+
     renderRowActions: ({ row }) => (
       <Box sx={{ display: 'flex', flexWrap: 'nowrap', gap: '8px' }}>
         {user && user.id === row.original.id && (
