@@ -272,9 +272,11 @@ router.put('/update-task/:taskId', auth, async (req, res) => {
       return res.status(404).json({ message: 'Task not found' });
     }
     
-  
-
-    
+    // Store old status to check if it changed to completed
+    const oldStatus = user.tasks[taskIndex].status;
+    const oldAssignedBy = user.tasks[taskIndex].AssignedBy;
+    const oldTaskName = user.tasks[taskIndex].taskName;
+    const oldProject = user.tasks[taskIndex].project;
     
     // Update task data
     user.tasks[taskIndex] = {
@@ -292,7 +294,38 @@ router.put('/update-task/:taskId', auth, async (req, res) => {
     
     console.log('Task updated successfully:', user.tasks[taskIndex]);
     
- 
+    // Send notification to assigner if task status changed to completed
+    const newStatus = status || oldStatus;
+    const assignerName = AssignedBy || oldAssignedBy;
+    
+    if (newStatus === 'completed' && oldStatus !== 'completed' && assignerName && assignerName !== 'Self') {
+      try {
+        // Find the user who assigned the task
+        const Notification = require('../models/Notification');
+        const assigner = await User.findOne({ name: assignerName });
+        
+        if (assigner && assigner._id.toString() !== userId) {
+          const notification = new Notification({
+            recipient: assigner._id,
+            type: 'TASK_COMPLETED',
+            message: `${user.name} has completed the task: "${taskName || oldTaskName}"`,
+            read: false,
+            metadata: {
+              completedBy: user.name,
+              taskName: taskName || oldTaskName,
+              projectName: project || oldProject,
+              completedAt: new Date()
+            }
+          });
+          
+          await notification.save();
+          console.log('Task completion notification sent to:', assigner.name);
+        }
+      } catch (notifError) {
+        console.error('Error sending task completion notification:', notifError);
+        // Don't fail the task update if notification fails
+      }
+    }
     
     res.json({
       message: 'Task updated successfully',
@@ -327,6 +360,12 @@ router.put('/:employeeId/update-task/:taskId', auth, async (req, res) => {
       return res.status(404).json({ message: 'Task not found' });
     }
     
+    // Store old status to check if it changed to completed
+    const oldStatus = user.tasks[taskIndex].status;
+    const oldAssignedBy = user.tasks[taskIndex].AssignedBy;
+    const oldTaskName = user.tasks[taskIndex].taskName;
+    const oldProject = user.tasks[taskIndex].project;
+    
     // Update task data
     user.tasks[taskIndex] = {
       ...user.tasks[taskIndex],
@@ -342,6 +381,37 @@ router.put('/:employeeId/update-task/:taskId', auth, async (req, res) => {
     await user.save();
     
     console.log('Task updated successfully:', user.tasks[taskIndex]);
+    
+    // Send notification to assigner if task status changed to completed
+    const newStatus = status || oldStatus;
+    const assignerName = AssignedBy || oldAssignedBy;
+    
+    if (newStatus === 'completed' && oldStatus !== 'completed' && assignerName && assignerName !== 'Self') {
+      try {
+        const Notification = require('../models/Notification');
+        const assigner = await User.findOne({ name: assignerName });
+        
+        if (assigner && assigner._id.toString() !== employeeId) {
+          const notification = new Notification({
+            recipient: assigner._id,
+            type: 'TASK_COMPLETED',
+            message: `${user.name} has completed the task: "${taskName || oldTaskName}"`,
+            read: false,
+            metadata: {
+              completedBy: user.name,
+              taskName: taskName || oldTaskName,
+              projectName: project || oldProject,
+              completedAt: new Date()
+            }
+          });
+          
+          await notification.save();
+          console.log('Task completion notification sent to:', assigner.name);
+        }
+      } catch (notifError) {
+        console.error('Error sending task completion notification:', notifError);
+      }
+    }
     
     res.json({
       message: 'Task updated successfully',
@@ -416,51 +486,7 @@ router.put('/test-update', auth, async (req, res) => {
   }
 });
 
-// Create new task (including tasks array)
-router.put('/:userId', auth, async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const { tasks, name, email, phone, address, jobTitle, startDate } = req.body;
-
-    console.log('Updating user:', userId);
-    console.log('Update data:', { tasks, name, email, phone, address, jobTitle, startDate });
-
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    // Check if tasks are being updated
-    if (tasks !== undefined) {
-      user.tasks = tasks;
-      // NOTE: Notification creation is handled by frontend calling /api/notifications/create
-      // This prevents duplicate notifications
-    }
-
-    // Update other fields if provided
-    if (name) user.name = name;
-    if (email) user.email = email;
-    if (phone) user.phone = phone;
-    if (address) user.address = address;
-    if (jobTitle) user.jobTitle = jobTitle;
-    if (startDate) user.startDate = startDate;
-
-    await user.save();
-
-    console.log('User updated successfully');
-
-    const updatedUser = await User.findById(userId).select('-password').populate('department');
-    res.json({
-      message: 'User updated successfully',
-      user: updatedUser
-    });
-  } catch (error) {
-    console.error('Error updating user:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
-
-// Update user profile
+// Update user profile (MUST BE BEFORE /:userId route)
 router.put('/profile', [auth, upload.single('avatar')], async (req, res) => {
   try {
     console.log('Profile update request received');
@@ -469,7 +495,7 @@ router.put('/profile', [auth, upload.single('avatar')], async (req, res) => {
     console.log('File:', req.file);
     
     const userId = req.user.userId;
-    const { name, email, phone, address, department, jobTitle, startDate } = req.body;
+    const { name, email, phone, address, jobTitle, startDate } = req.body;
 
     // Find the user
     const user = await User.findById(userId);
@@ -545,6 +571,75 @@ router.put('/profile', [auth, upload.single('avatar')], async (req, res) => {
       });
     }
     
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Create new task (including tasks array) - GENERIC ROUTE (MUST BE LAST)
+router.put('/:userId', auth, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { tasks, name, email, phone, address, jobTitle, startDate } = req.body;
+
+    console.log('Updating user:', userId);
+    console.log('Update data:', { tasks, name, email, phone, address, jobTitle, startDate });
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Check if tasks are being updated
+    if (tasks !== undefined) {
+      user.tasks = tasks;
+      // NOTE: Notification creation is handled by frontend calling /api/notifications/create
+      // This prevents duplicate notifications
+    }
+
+    // Update other fields if provided
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (phone) user.phone = phone;
+    if (address) user.address = address;
+    if (jobTitle) user.jobTitle = jobTitle;
+    if (startDate) user.startDate = startDate;
+
+    await user.save();
+
+    console.log('User updated successfully');
+
+    const updatedUser = await User.findById(userId).select('-password').populate('department');
+    res.json({
+      message: 'User updated successfully',
+      user: updatedUser
+    });
+  } catch (error) {
+    console.error('Error updating user:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Get available employees for a department (employees not in this department)
+router.get('/available-for-department/:departmentId', auth, async (req, res) => {
+  try {
+    const { departmentId } = req.params;
+    
+    console.log('Fetching available employees for department:', departmentId);
+    
+    // Find all employees NOT in this department
+    const availableEmployees = await User.find({
+      department: { $ne: departmentId },
+      role: 'employee'
+    })
+    .select('-password')
+    .populate('department')
+    .sort({ name: 1 });
+    
+    console.log(`Found ${availableEmployees.length} available employees`);
+    
+    res.json(availableEmployees);
+  } catch (error) {
+    console.error('Error fetching available employees:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });

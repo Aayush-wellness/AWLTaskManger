@@ -112,11 +112,10 @@ const PersonalEmployeeTable = () => {
   // Save edit
   const handleSaveEdit = useCallback(async () => {
     try {
-      const formData = new FormData();
-      if (editFormData.jobTitle) formData.append('jobTitle', editFormData.jobTitle);
-      if (editFormData.startDate) formData.append('startDate', editFormData.startDate);
-
-      await axios.put('/api/users/profile', formData);
+      await axios.put('/api/users/profile', {
+        jobTitle: editFormData.jobTitle,
+        startDate: editFormData.startDate
+      });
       await fetchPersonalData();
       setEditModalOpen(false);
       setEditFormData({ jobTitle: '', startDate: '' });
@@ -318,6 +317,22 @@ const PersonalEmployeeTable = () => {
         margin: 0,
       }
     },
+    // Make entire row clickable to expand/collapse
+    muiTableBodyRowProps: ({ row }) => ({
+      onClick: (event) => {
+        // Don't toggle if clicking on buttons, links, or interactive elements
+        if (event.target.closest('button, a, input, .MuiIconButton-root, .MuiCheckbox-root')) {
+          return;
+        }
+        row.toggleExpanded();
+      },
+      sx: {
+        cursor: 'pointer',
+        '&:hover': {
+          backgroundColor: 'rgba(91, 124, 250, 0.04)',
+        },
+      },
+    }),
     renderTopToolbarCustomActions: () => (
       <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
         <button

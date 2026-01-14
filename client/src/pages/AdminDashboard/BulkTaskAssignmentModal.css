@@ -1,4 +1,6 @@
-/* BulkTaskAssignmentModal Styles */
+/* ============================================
+   BULK TASK ASSIGNMENT MODAL - MODERN STYLES
+   ============================================ */
 
 .bulk-task-modal {
   max-width: 1400px;
@@ -6,6 +8,7 @@
 
 .bulk-task-modal .MuiDialog-paper {
   max-height: 90vh;
+  border-radius: 24px;
 }
 
 .bulk-task-modal .MuiDialogContent-root {
@@ -13,7 +16,7 @@
   gap: 24px;
   padding: 24px;
   min-height: 600px;
-  background-color: #f9fafb;
+  background-color: #f8fafc;
 }
 
 /* Embedded Mode */
@@ -21,8 +24,9 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 24px;
-  background-color: #ffffff;
+  padding: 32px;
+  background-color: #f8fafc;
+  min-height: 700px;
 }
 
 .bulk-task-embedded-content {
@@ -34,374 +38,70 @@
 
 .bulk-task-embedded-actions {
   display: flex;
-  gap: 12px;
-  padding-top: 16px;
-  border-top: 1px solid #e5e7eb;
-  margin-top: 16px;
+  gap: 16px;
+  padding-top: 24px;
+  border-top: 2px solid #e2e8f0;
+  margin-top: 24px;
   justify-content: flex-end;
 }
 
 .bulk-task-embedded-actions button {
-  padding: 10px 24px;
+  padding: 14px 32px;
   font-weight: 600;
-  border-radius: 6px;
+  border-radius: 12px;
   text-transform: none;
+  font-size: 15px;
 }
 
-/* Left Panel: Department & Assignee Selection */
-.bulk-task-left-panel {
-  flex: 0 0 25%;
-  border-right: 1px solid #e5e7eb;
-  padding-right: 16px;
-  overflow-y: auto;
-  max-height: calc(100% - 60px);
-}
-
-.bulk-task-left-panel h6 {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 16px;
-  color: #1f2937;
-}
-
-.bulk-task-dept-button {
-  width: 100%;
-  justify-content: flex-start;
-  text-transform: none;
-  font-size: 14px;
-  font-weight: 600;
-  color: #374151;
-  padding: 10px 12px;
-  margin-bottom: 8px;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-}
-
-.bulk-task-dept-button:hover {
-  background-color: #f3f4f6;
-  color: #1f2937;
-}
-
-.bulk-task-dept-button.expanded {
-  background-color: #f0f4ff;
-  color: #5b7cfa;
-}
-
-.bulk-task-employees-list {
-  padding-left: 16px;
-  margin-top: 8px;
-  margin-bottom: 16px;
-}
-
-.bulk-task-employee-item {
-  display: block;
-  margin-bottom: 8px;
-  padding: 8px;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
-}
-
-.bulk-task-employee-item:hover {
-  background-color: #f3f4f6;
-}
-
-.bulk-task-employee-name {
-  font-size: 14px;
-  font-weight: 500;
-  color: #1f2937;
-}
-
-.bulk-task-employee-role {
-  font-size: 12px;
-  color: #9ca3af;
-  display: block;
-  margin-top: 2px;
-}
-
-/* Center Panel: File Upload & Parsing */
-.bulk-task-center-panel {
-  flex: 0 0 25%;
-  border-right: 1px solid #e5e7eb;
-  padding-right: 16px;
-  overflow-y: auto;
-  max-height: calc(100% - 60px);
-}
-
-.bulk-task-center-panel h6 {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 16px;
-  color: #1f2937;
-}
-
-.bulk-task-upload-area {
-  border: 2px dashed #d1d5db;
-  border-radius: 8px;
+/* Panel Styles */
+.bulk-task-embedded-content > div:first-child,
+.bulk-task-embedded-content > div:nth-child(2),
+.bulk-task-embedded-content > div:last-child {
+  background: white;
+  border-radius: 20px;
   padding: 24px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.bulk-task-upload-area:hover {
-  border-color: #5b7cfa;
-  background-color: #f8f9ff;
-}
-
-.bulk-task-upload-area input {
-  display: none;
-}
-
-.bulk-task-upload-icon {
-  width: 32px;
-  height: 32px;
-  margin: 0 auto 12px;
-  color: #5b7cfa;
-}
-
-.bulk-task-upload-text {
-  font-weight: 600;
-  font-size: 14px;
-  margin-bottom: 8px;
-  color: #1f2937;
-}
-
-.bulk-task-upload-hint {
-  font-size: 12px;
-  color: #9ca3af;
-}
-
-.bulk-task-file-success {
-  margin-top: 16px;
-  padding: 12px;
-  background-color: #f0fdf4;
-  border-radius: 6px;
-  border-left: 4px solid #10b981;
-}
-
-.bulk-task-file-success-text {
-  font-size: 14px;
-  font-weight: 600;
-  color: #10b981;
-}
-
-.bulk-task-processing {
-  margin-top: 16px;
-  text-align: center;
-}
-
-.bulk-task-processing-spinner {
-  display: inline-block;
-  margin-bottom: 8px;
-}
-
-.bulk-task-processing-text {
-  font-size: 12px;
-  color: #9ca3af;
-  display: block;
-}
-
-.bulk-task-error {
-  margin-top: 16px;
-  padding: 12px;
-  background-color: #fef2f2;
-  border-radius: 6px;
-  border-left: 4px solid #ef4444;
-  font-size: 13px;
-  color: #991b1b;
-}
-
-.bulk-task-extract-toggle {
-  margin-top: 16px;
-  display: block;
-}
-
-/* Right Panel: Task Preview & Assignment */
-.bulk-task-right-panel {
-  flex: 0 0 50%;
-  overflow-y: auto;
-  max-height: calc(100% - 60px);
-  padding-right: 8px;
-}
-
-.bulk-task-right-panel h6 {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 16px;
-  color: #1f2937;
-  position: sticky;
-  top: 0;
-  background-color: #f9fafb;
-  padding-bottom: 8px;
-  z-index: 10;
-}
-
-.bulk-task-empty-state {
-  font-size: 14px;
-  color: #9ca3af;
-  text-align: center;
-  padding: 32px 16px;
-}
-
-.bulk-task-preview-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.bulk-task-preview-item {
-  padding: 16px;
-  background-color: #ffffff;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  transition: all 0.2s ease;
-}
-
-.bulk-task-preview-item:hover {
-  border-color: #5b7cfa;
-  box-shadow: 0 1px 3px rgba(91, 124, 250, 0.1);
-}
-
-.bulk-task-preview-header {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-  align-items: flex-start;
-}
-
-.bulk-task-preview-checkbox {
-  margin-top: 4px;
-  flex-shrink: 0;
-}
-
-.bulk-task-preview-title-input {
+.bulk-task-embedded-content > div:last-child {
   flex: 1;
 }
 
-.bulk-task-preview-fields {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.bulk-task-preview-field {
-  display: flex;
-  flex-direction: column;
-}
-
-.bulk-task-preview-field label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #6b7280;
-  margin-bottom: 4px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.bulk-task-preview-field input,
-.bulk-task-preview-field select {
-  padding: 8px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
-  font-size: 13px;
-  font-family: inherit;
-  transition: border-color 0.2s ease;
-}
-
-.bulk-task-preview-field input:focus,
-.bulk-task-preview-field select:focus {
-  outline: none;
-  border-color: #5b7cfa;
-  box-shadow: 0 0 0 3px rgba(91, 124, 250, 0.1);
-}
-
-/* Dialog Actions */
-.bulk-task-modal .MuiDialogActions-root {
-  padding: 16px 24px;
-  border-top: 1px solid #e5e7eb;
-  background-color: #ffffff;
-  gap: 12px;
-}
-
-.bulk-task-modal .MuiButton-contained {
-  background-color: #5b7cfa;
-  color: #ffffff;
-  font-weight: 600;
-  padding: 10px 24px;
-  border-radius: 6px;
-  text-transform: none;
-  transition: all 0.2s ease;
-}
-
-.bulk-task-modal .MuiButton-contained:hover {
-  background-color: #4c63d2;
-  box-shadow: 0 4px 12px rgba(91, 124, 250, 0.3);
-}
-
-.bulk-task-modal .MuiButton-contained:disabled {
-  background-color: #d1d5db;
-  color: #9ca3af;
-  cursor: not-allowed;
-}
-
-.bulk-task-modal .MuiButton-text {
-  color: #6b7280;
-  text-transform: none;
-  font-weight: 500;
-}
-
-.bulk-task-modal .MuiButton-text:hover {
-  background-color: #f3f4f6;
-}
-
-/* Scrollbar Styling */
-.bulk-task-left-panel::-webkit-scrollbar,
-.bulk-task-center-panel::-webkit-scrollbar,
-.bulk-task-right-panel::-webkit-scrollbar {
+/* Scrollbar */
+.bulk-task-embedded-content > div::-webkit-scrollbar {
   width: 6px;
 }
 
-.bulk-task-left-panel::-webkit-scrollbar-track,
-.bulk-task-center-panel::-webkit-scrollbar-track,
-.bulk-task-right-panel::-webkit-scrollbar-track {
-  background: #f3f4f6;
+.bulk-task-embedded-content > div::-webkit-scrollbar-track {
+  background: #f1f5f9;
   border-radius: 3px;
 }
 
-.bulk-task-left-panel::-webkit-scrollbar-thumb,
-.bulk-task-center-panel::-webkit-scrollbar-thumb,
-.bulk-task-right-panel::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+.bulk-task-embedded-content > div::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
   border-radius: 3px;
 }
 
-.bulk-task-left-panel::-webkit-scrollbar-thumb:hover,
-.bulk-task-center-panel::-webkit-scrollbar-thumb:hover,
-.bulk-task-right-panel::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
-}
-
-/* Responsive Design */
+/* Responsive */
 @media (max-width: 1200px) {
-  .bulk-task-embedded-content,
-  .bulk-task-modal .MuiDialogContent-root {
+  .bulk-task-embedded-content {
     flex-direction: column;
-    gap: 16px;
+    gap: 20px;
   }
-
-  .bulk-task-left-panel,
-  .bulk-task-center-panel,
-  .bulk-task-right-panel {
-    flex: 1 !important;
-    border-right: none;
-    border-bottom: 1px solid #e5e7eb;
-    padding-right: 0;
-    padding-bottom: 16px;
-    max-height: none;
+  .bulk-task-embedded-container {
+    padding: 20px;
   }
+}
 
-  .bulk-task-preview-fields {
-    grid-template-columns: 1fr;
+@media (max-width: 768px) {
+  .bulk-task-embedded-container {
+    padding: 16px;
+    min-height: auto;
+  }
+  .bulk-task-embedded-actions {
+    flex-direction: column;
+  }
+  .bulk-task-embedded-actions button {
+    width: 100%;
   }
 }
