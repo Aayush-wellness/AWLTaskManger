@@ -105,7 +105,7 @@ const Login = () => {
             <p className="forgot-password-link">
               <button 
                 type="button" 
-                onClick={() => setShowForgotPassword(true)}
+                onClick={() => setShowForgotPassword(true)} 
                 className="link-button"
               >
                 Forgot Password?

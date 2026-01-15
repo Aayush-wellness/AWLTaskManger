@@ -9,26 +9,37 @@ const AddTaskModal = ({
   if (!isOpen) return null;
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      zIndex: 1000
-    }}>
-      <div style={{
-        background: 'white',
-        borderRadius: '8px',
-        padding: '24px',
-        width: '500px',
-        maxHeight: '80vh',
-        overflow: 'auto'
-      }}>
+    <div 
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1000
+      }}
+      onClick={(e) => {
+        // Close modal only if clicking on the backdrop, not the modal content
+        if (e.target === e.currentTarget) {
+          onCancel();
+        }
+      }}
+    >
+      <div 
+        style={{
+          background: 'white',
+          borderRadius: '8px',
+          padding: '24px',
+          width: '500px',
+          maxHeight: '80vh',
+          overflow: 'auto'
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <h2>Add New Task</h2>
 
         <form onSubmit={(e) => { e.preventDefault(); onSave(); }}>
