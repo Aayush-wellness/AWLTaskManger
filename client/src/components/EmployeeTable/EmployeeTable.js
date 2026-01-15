@@ -324,6 +324,7 @@ const EmployeeTableComponent = () => {
       showColumnFilters: false,
       showGlobalFilter: false,
       columnPinning: { right: ['mrt-row-actions'] },
+      expanded: true, // Expand all rows by default
     },
     paginationDisplayMode: 'pages',
     positionToolbarAlertBanner: 'bottom',

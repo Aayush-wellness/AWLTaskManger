@@ -294,10 +294,12 @@ const PersonalEmployeeTable = () => {
     enableRowActions: false,
     enableRowSelection: false,
     enableEditing: false,
+    // enableExpanding: true,
     getRowId: (row) => row.id,
     initialState: {
       showColumnFilters: false,
       showGlobalFilter: false,
+      expanded: true, // Expand all rows by default
     },
     paginationDisplayMode: 'pages',
     positionToolbarAlertBanner: 'bottom',
