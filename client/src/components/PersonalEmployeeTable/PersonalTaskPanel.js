@@ -12,7 +12,7 @@ import EditTaskModal from './EditTaskModal';
 
 const PersonalTaskPanel = ({ row, onRefresh }) => {
     const { user: currentUser } = useAuth();
-    const { projects, refetchProjects } = useProjects();
+    const { projects } = useProjects();
   const [viewMode, setViewMode] = useState('table'); // for Gantt-Charts
   const [taskTab, setTaskTab] = useState('my-tasks'); // 'my-tasks' or 'assigned-tasks'
   const [taskEditModalOpen, setTaskEditModalOpen] = useState(false);
