@@ -398,9 +398,12 @@ const EmployeeDetailPanel = ({ row, onUpdateEmployee, fetchDepartmentEmployees }
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    marginBottom: '16px'
+                    marginBottom: '16px',
+                    flexWrap: 'wrap',
+                    gap: '12px'
                 }}>
                     <h4 style={{ margin: 0 }}>My Tasks ({row.original.tasks?.length || 0})</h4>
+                    
                     <button
                         onClick={handleAddTask}
                         style={{

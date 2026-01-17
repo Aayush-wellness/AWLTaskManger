@@ -62,6 +62,65 @@ router.get('/test-auth', auth, async (req, res) => {
   }
 });
 
+// Get tasks assigned by current user to others
+router.get('/assigned-tasks', auth, async (req, res) => {
+  try {
+    const currentUserId = req.user.userId;
+    const currentUser = await User.findById(currentUserId).select('name');
+    
+    if (!currentUser) {
+      return res.status(404).json({ message: 'Current user not found' });
+    }
+
+    const currentUserName = currentUser.name;
+    console.log('Fetching tasks assigned by:', currentUserName);
+
+    // Find all users and their tasks where AssignedBy matches current user's name
+    const allUsers = await User.find({ role: 'employee' })
+      .select('_id name email jobTitle department tasks')
+      .populate('department');
+
+    const assignedTasks = [];
+
+    allUsers.forEach(user => {
+      if (user.tasks && Array.isArray(user.tasks)) {
+        user.tasks.forEach(task => {
+          // Check if task was assigned by current user
+          if (task.AssignedBy === currentUserName) {
+            assignedTasks.push({
+              _id: task._id || task.id, // Use MongoDB _id or fallback to id
+              id: task.id,
+              taskName: task.taskName,
+              project: task.project,
+              AssignedBy: task.AssignedBy,
+              startDate: task.startDate,
+              endDate: task.endDate,
+              remark: task.remark,
+              status: task.status,
+              assignedToId: user._id,
+              assignedToName: user.name,
+              assignedToEmail: user.email,
+              assignedToJobTitle: user.jobTitle,
+              assignedToDepartment: user.department?.name || 'N/A'
+            });
+          }
+        });
+      }
+    });
+
+    console.log(`Found ${assignedTasks.length} tasks assigned by ${currentUserName}`);
+
+    res.json({
+      message: 'Assigned tasks retrieved successfully',
+      tasks: assignedTasks,
+      count: assignedTasks.length
+    });
+  } catch (error) {
+    console.error('Error fetching assigned tasks:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // Get employees from same department
 router.get('/department/:departmentId', auth, async (req, res) => {
   try {
@@ -460,6 +519,46 @@ router.delete('/delete-task/:taskId', auth, async (req, res) => {
   }
 });
 
+// Delete task from a specific employee (for managers/admins)
+router.delete('/:employeeId/delete-task/:taskId', auth, async (req, res) => {
+  try {
+    const { employeeId, taskId } = req.params;
+    
+    console.log('Deleting task:', taskId, 'for employee:', employeeId);
+    
+    const user = await User.findById(employeeId);
+    if (!user) {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+    
+    // Find and remove the task
+    const taskIndex = user.tasks.findIndex(task => {
+      const currentTaskId = task._id?.toString() || task.id;
+      return currentTaskId === taskId;
+    });
+    
+    if (taskIndex === -1) {
+      console.log('Task not found. Available tasks:', user.tasks.map(t => ({ id: t.id, _id: t._id?.toString() })));
+      return res.status(404).json({ message: 'Task not found' });
+    }
+    
+    // Remove task from array
+    const deletedTask = user.tasks.splice(taskIndex, 1)[0];
+    await user.save();
+    
+    console.log('Task deleted successfully from employee:', deletedTask);
+    
+    res.json({
+      message: 'Task deleted successfully',
+      task: deletedTask
+    });
+    
+  } catch (error) {
+    console.error('Error deleting employee task:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // Simple test update route
 router.put('/test-update', auth, async (req, res) => {
   try {
@@ -582,7 +681,7 @@ router.put('/:userId', auth, async (req, res) => {
     const { tasks, name, email, phone, address, jobTitle, startDate } = req.body;
 
     console.log('Updating user:', userId);
-    console.log('Update data:', { tasks, name, email, phone, address, jobTitle, startDate });
+    console.log('Update data:', { tasks: tasks ? `${tasks.length} tasks` : 'no tasks', name, email, phone, address, jobTitle, startDate });
 
     const user = await User.findById(userId);
     if (!user) {

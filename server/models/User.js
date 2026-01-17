@@ -50,7 +50,16 @@ const userSchema = new mongoose.Schema({
       type: String,
       enum: ['pending', 'in-progress', 'completed', 'blocked'],
       default: 'pending'
-    }
+    },
+    notes: [{
+      id: String,
+      content: String,
+      createdAt: {
+        type: Date,
+        default: Date.now
+      },
+      updatedAt: Date
+    }]
   }]
 }, { timestamps: true });
 
