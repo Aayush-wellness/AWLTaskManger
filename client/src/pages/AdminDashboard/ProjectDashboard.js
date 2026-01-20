@@ -146,21 +146,22 @@ const ProjectDashboard = ({ projects, employees, onProjectsRefresh }) => {
   ];
 
   return (
-    <Box sx={{ width: '100%', minHeight: '100%' }}>
-      {/* Modern Tab Navigation */}
+    <Box sx={{ width: '100%', minHeight: '100%', background: 'linear-gradient(to bottom, #f8fafc 0%, #ffffff 100%)' }}>
+      {/* Modern Tab Navigation with Enhanced Styling */}
       <Box sx={{ 
         background: 'white', 
-        borderRadius: '16px', 
-        p: 1, 
-        mb: 3,
-        boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+        borderRadius: '20px', 
+        p: 1.5, 
+        mb: 4,
+        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+        border: '1px solid rgba(102, 126, 234, 0.1)'
       }}>
         <Tabs 
           value={activeView} 
           onChange={(e, newValue) => setActiveView(newValue)}
           sx={{
             '& .MuiTabs-indicator': { display: 'none' },
-            '& .MuiTabs-flexContainer': { gap: '8px', flexWrap: 'wrap' },
+            '& .MuiTabs-flexContainer': { gap: '10px', flexWrap: 'wrap', justifyContent: 'center' },
           }}
         >
           {tabConfig.map((tab, index) => (
@@ -174,18 +175,21 @@ const ProjectDashboard = ({ projects, employees, onProjectsRefresh }) => {
                 fontSize: '14px',
                 fontWeight: 500,
                 color: '#64748b',
-                borderRadius: '12px',
-                minHeight: '48px',
-                px: 2.5,
-                transition: 'all 0.2s ease',
+                borderRadius: '14px',
+                minHeight: '52px',
+                px: 3,
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 '&.Mui-selected': {
                   color: 'white',
                   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                   fontWeight: 600,
+                  boxShadow: '0 8px 20px rgba(102, 126, 234, 0.35)',
+                  transform: 'translateY(-2px)',
                 },
                 '&:hover:not(.Mui-selected)': {
-                  background: '#f1f5f9',
+                  background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)',
                   color: '#334155',
+                  transform: 'translateY(-1px)',
                 },
               }}
             />
@@ -207,43 +211,81 @@ const ProjectDashboard = ({ projects, employees, onProjectsRefresh }) => {
 
 export default ProjectDashboard;
 
-// Helper function for avatar colors
+// Helper function for avatar colors - Enhanced with more vibrant gradients
 const getAvatarColor = (name) => {
   const colors = [
-    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-    'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-    'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-    'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-    'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
-    'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
-    'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
+    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', // Purple
+    'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', // Pink-Red
+    'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', // Cyan
+    'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', // Green-Teal
+    'linear-gradient(135deg, #fa709a 0%, #fee140 100%)', // Pink-Yellow
+    'linear-gradient(135deg, #30cfd0 0%, #330867 100%)', // Teal-Purple
+    'linear-gradient(135deg, #ff6b6b 0%, #feca57 100%)', // Red-Yellow
+    'linear-gradient(135deg, #5f27cd 0%, #341f97 100%)', // Deep Purple
+    'linear-gradient(135deg, #ee5a6f 0%, #f29263 100%)', // Coral
+    'linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%)', // Blue
   ];
   const index = name ? name.charCodeAt(0) % colors.length : 0;
   return colors[index];
 };
 
-// Stat Card Component
+// Stat Card Component - Enhanced with better alignment and vibrant colors
 const StatCard = ({ icon, label, value, gradient, subtitle }) => (
   <Card sx={{ 
-    borderRadius: '16px', 
-    boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-    transition: 'all 0.3s ease',
-    '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 12px 24px rgba(0,0,0,0.1)' }
+    borderRadius: '20px', 
+    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+    border: '1px solid rgba(0,0,0,0.05)',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    '&:hover': { 
+      transform: 'translateY(-6px)', 
+      boxShadow: '0 20px 40px rgba(0,0,0,0.15)' 
+    }
   }}>
-    <CardContent sx={{ p: 3 }}>
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+    <CardContent sx={{ p: 3.5 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5 }}>
         <Box sx={{
-          width: 52, height: 52, borderRadius: '14px',
+          width: 60, 
+          height: 60, 
+          borderRadius: '16px',
           background: gradient,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white',
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          color: 'white',
+          boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
         }}>
           {icon}
         </Box>
-        <Box>
-          <Typography sx={{ fontSize: '13px', color: '#64748b', fontWeight: 500, mb: 0.5 }}>{label}</Typography>
-          <Typography sx={{ fontSize: '28px', fontWeight: 700, color: '#1e293b', lineHeight: 1 }}>{value}</Typography>
-          {subtitle && <Typography sx={{ fontSize: '12px', color: '#94a3b8', mt: 0.5 }}>{subtitle}</Typography>}
+        <Box sx={{ flex: 1 }}>
+          <Typography sx={{ 
+            fontSize: '13px', 
+            color: '#64748b', 
+            fontWeight: 600, 
+            mb: 0.5,
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px'
+          }}>
+            {label}
+          </Typography>
+          <Typography sx={{ 
+            fontSize: '32px', 
+            fontWeight: 800, 
+            color: '#1e293b', 
+            lineHeight: 1,
+            letterSpacing: '-0.5px'
+          }}>
+            {value}
+          </Typography>
+          {subtitle && (
+            <Typography sx={{ 
+              fontSize: '12px', 
+              color: '#94a3b8', 
+              mt: 0.5,
+              fontWeight: 500
+            }}>
+              {subtitle}
+            </Typography>
+          )}
         </Box>
       </Box>
     </CardContent>
@@ -251,78 +293,231 @@ const StatCard = ({ icon, label, value, gradient, subtitle }) => (
 );
 
 
-// Admin Overview View
+// Admin Overview View - Enhanced with better spacing and vibrant colors
 const AdminOverviewView = ({ stats }) => (
-  <Box>
-    <Box sx={{ mb: 4 }}>
-      <Typography variant="h4" sx={{ fontWeight: 700, color: '#1e293b', mb: 1 }}>Admin Overview</Typography>
-      <Typography sx={{ color: '#64748b' }}>Organization-wide task metrics and department performance</Typography>
+  <Box sx={{ px: 2 }}>
+    <Box sx={{ mb: 5, textAlign: 'center' }}>
+      <Typography variant="h3" sx={{ 
+        fontWeight: 800, 
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        mb: 1.5
+      }}>
+        Admin Overview
+      </Typography>
+      <Typography sx={{ color: '#64748b', fontSize: '16px', fontWeight: 500 }}>
+        Organization-wide task metrics and department performance
+      </Typography>
     </Box>
 
-    <Grid container spacing={3} sx={{ mb: 4 }}>
+    <Grid container spacing={3} sx={{ mb: 5 }}>
       <Grid item xs={12} sm={6} md={3}>
-        <StatCard icon={<Target size={24} />} label="Total Tasks" value={stats.totalTasks} gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)" />
+        <StatCard 
+          icon={<Target size={26} />} 
+          label="Total Tasks" 
+          value={stats.totalTasks} 
+          gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)" 
+        />
       </Grid>
       <Grid item xs={12} sm={6} md={3}>
-        <StatCard icon={<CheckCircle size={24} />} label="Completed" value={stats.completedTasks} gradient="linear-gradient(135deg, #10b981 0%, #059669 100%)" subtitle={`${stats.completionPercentage}% done`} />
+        <StatCard 
+          icon={<CheckCircle size={26} />} 
+          label="Completed" 
+          value={stats.completedTasks} 
+          gradient="linear-gradient(135deg, #10b981 0%, #059669 100%)" 
+          subtitle={`${stats.completionPercentage}% done`} 
+        />
       </Grid>
       <Grid item xs={12} sm={6} md={3}>
-        <StatCard icon={<Clock size={24} />} label="In Progress" value={stats.inProgressTasks} gradient="linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)" />
+        <StatCard 
+          icon={<Clock size={26} />} 
+          label="In Progress" 
+          value={stats.inProgressTasks} 
+          gradient="linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)" 
+        />
       </Grid>
       <Grid item xs={12} sm={6} md={3}>
-        <StatCard icon={<AlertTriangle size={24} />} label="Overdue" value={stats.overdueTasks} gradient="linear-gradient(135deg, #ef4444 0%, #dc2626 100%)" subtitle="Need attention" />
+        <StatCard 
+          icon={<AlertTriangle size={26} />} 
+          label="Overdue" 
+          value={stats.overdueTasks} 
+          gradient="linear-gradient(135deg, #ef4444 0%, #dc2626 100%)" 
+          subtitle="Need attention" 
+        />
       </Grid>
     </Grid>
 
-    <Card sx={{ borderRadius: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', mb: 4 }}>
-      <CardContent sx={{ p: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+    <Card sx={{ 
+      borderRadius: '24px', 
+      boxShadow: '0 8px 30px rgba(0,0,0,0.1)', 
+      mb: 5,
+      border: '1px solid rgba(102, 126, 234, 0.1)',
+      overflow: 'hidden'
+    }}>
+      <CardContent sx={{ p: 5 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
           <Box>
-            <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b' }}>Overall Completion</Typography>
-            <Typography sx={{ color: '#64748b', fontSize: '14px' }}>Team progress across all projects</Typography>
+            <Typography variant="h5" sx={{ fontWeight: 700, color: '#1e293b', mb: 0.5 }}>
+              Overall Completion
+            </Typography>
+            <Typography sx={{ color: '#64748b', fontSize: '14px', fontWeight: 500 }}>
+              Team progress across all projects
+            </Typography>
           </Box>
-          <Box sx={{ px: 3, py: 1.5, background: stats.completionPercentage > 70 ? 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)' : 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)', borderRadius: '12px' }}>
-            <Typography sx={{ fontSize: '28px', fontWeight: 700, color: stats.completionPercentage > 70 ? '#16a34a' : '#d97706' }}>{stats.completionPercentage}%</Typography>
+          <Box sx={{ 
+            px: 4, 
+            py: 2, 
+            background: stats.completionPercentage > 70 
+              ? 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)' 
+              : 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)', 
+            borderRadius: '16px',
+            boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
+          }}>
+            <Typography sx={{ 
+              fontSize: '36px', 
+              fontWeight: 800, 
+              color: stats.completionPercentage > 70 ? '#16a34a' : '#d97706',
+              lineHeight: 1
+            }}>
+              {stats.completionPercentage}%
+            </Typography>
           </Box>
         </Box>
-        <Box sx={{ height: 12, borderRadius: 6, backgroundColor: '#f1f5f9', overflow: 'hidden' }}>
-          <Box sx={{ height: '100%', width: `${stats.completionPercentage}%`, background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)', borderRadius: 6, transition: 'width 0.5s ease' }} />
+        <Box sx={{ 
+          height: 16, 
+          borderRadius: 8, 
+          backgroundColor: '#f1f5f9', 
+          overflow: 'hidden',
+          boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.06)'
+        }}>
+          <Box sx={{ 
+            height: '100%', 
+            width: `${stats.completionPercentage}%`, 
+            background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)', 
+            borderRadius: 8, 
+            transition: 'width 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
+            boxShadow: '0 2px 8px rgba(102, 126, 234, 0.4)'
+          }} />
         </Box>
       </CardContent>
     </Card>
 
-    <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b', mb: 3 }}>Department Performance</Typography>
+    <Typography variant="h5" sx={{ 
+      fontWeight: 700, 
+      color: '#1e293b', 
+      mb: 4,
+      display: 'flex',
+      alignItems: 'center',
+      gap: 2
+    }}>
+      <Box sx={{
+        width: 4,
+        height: 28,
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        borderRadius: 2
+      }} />
+      Department Performance
+    </Typography>
     <Grid container spacing={3}>
       {stats.departmentStats.map((dept, idx) => {
         const deptCompletion = dept.tasks > 0 ? Math.round((dept.completed / dept.tasks) * 100) : 0;
         return (
           <Grid item xs={12} sm={6} md={4} key={idx}>
-            <Card sx={{ borderRadius: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', transition: 'all 0.3s ease', '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 8px 24px rgba(0,0,0,0.1)' } }}>
-              <CardContent sx={{ p: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                  <Box sx={{ width: 44, height: 44, borderRadius: '12px', background: getAvatarColor(dept.name), display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: '16px' }}>
+            <Card sx={{ 
+              borderRadius: '20px', 
+              boxShadow: '0 4px 20px rgba(0,0,0,0.08)', 
+              border: '1px solid rgba(0,0,0,0.05)',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', 
+              '&:hover': { 
+                transform: 'translateY(-6px)', 
+                boxShadow: '0 12px 35px rgba(0,0,0,0.15)' 
+              } 
+            }}>
+              <CardContent sx={{ p: 3.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5, mb: 3 }}>
+                  <Box sx={{ 
+                    width: 52, 
+                    height: 52, 
+                    borderRadius: '14px', 
+                    background: getAvatarColor(dept.name), 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    color: 'white', 
+                    fontWeight: 700, 
+                    fontSize: '20px',
+                    boxShadow: '0 6px 20px rgba(0,0,0,0.15)'
+                  }}>
                     {dept.name?.charAt(0).toUpperCase()}
                   </Box>
                   <Box sx={{ flex: 1 }}>
-                    <Typography sx={{ fontWeight: 600, color: '#1e293b' }}>{dept.name}</Typography>
-                    <Typography sx={{ fontSize: '13px', color: '#94a3b8' }}>{dept.members} members</Typography>
+                    <Typography sx={{ fontWeight: 700, color: '#1e293b', fontSize: '16px' }}>
+                      {dept.name}
+                    </Typography>
+                    <Typography sx={{ fontSize: '13px', color: '#94a3b8', fontWeight: 500 }}>
+                      {dept.members} members
+                    </Typography>
                   </Box>
                 </Box>
                 <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 3 }}>
-                  <Box sx={{ p: 1.5, backgroundColor: '#f8fafc', borderRadius: '10px', textAlign: 'center' }}>
-                    <Typography sx={{ fontSize: '20px', fontWeight: 700, color: '#1e293b' }}>{dept.tasks}</Typography>
-                    <Typography sx={{ fontSize: '11px', color: '#64748b' }}>Tasks</Typography>
+                  <Box sx={{ 
+                    p: 2, 
+                    backgroundColor: '#f8fafc', 
+                    borderRadius: '12px', 
+                    textAlign: 'center',
+                    border: '1px solid #e2e8f0'
+                  }}>
+                    <Typography sx={{ fontSize: '24px', fontWeight: 800, color: '#1e293b' }}>
+                      {dept.tasks}
+                    </Typography>
+                    <Typography sx={{ fontSize: '11px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>
+                      Tasks
+                    </Typography>
                   </Box>
-                  <Box sx={{ p: 1.5, backgroundColor: '#f0fdf4', borderRadius: '10px', textAlign: 'center' }}>
-                    <Typography sx={{ fontSize: '20px', fontWeight: 700, color: '#16a34a' }}>{dept.completed}</Typography>
-                    <Typography sx={{ fontSize: '11px', color: '#64748b' }}>Done</Typography>
+                  <Box sx={{ 
+                    p: 2, 
+                    backgroundColor: '#f0fdf4', 
+                    borderRadius: '12px', 
+                    textAlign: 'center',
+                    border: '1px solid #bbf7d0'
+                  }}>
+                    <Typography sx={{ fontSize: '24px', fontWeight: 800, color: '#16a34a' }}>
+                      {dept.completed}
+                    </Typography>
+                    <Typography sx={{ fontSize: '11px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>
+                      Done
+                    </Typography>
                   </Box>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Box sx={{ flex: 1, height: 6, borderRadius: 3, backgroundColor: '#f1f5f9', overflow: 'hidden' }}>
-                    <Box sx={{ height: '100%', width: `${deptCompletion}%`, borderRadius: 3, background: deptCompletion > 70 ? 'linear-gradient(90deg, #22c55e 0%, #16a34a 100%)' : 'linear-gradient(90deg, #f59e0b 0%, #d97706 100%)' }} />
+                  <Box sx={{ 
+                    flex: 1, 
+                    height: 8, 
+                    borderRadius: 4, 
+                    backgroundColor: '#f1f5f9', 
+                    overflow: 'hidden',
+                    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.06)'
+                  }}>
+                    <Box sx={{ 
+                      height: '100%', 
+                      width: `${deptCompletion}%`, 
+                      borderRadius: 4, 
+                      background: deptCompletion > 70 
+                        ? 'linear-gradient(90deg, #22c55e 0%, #16a34a 100%)' 
+                        : 'linear-gradient(90deg, #f59e0b 0%, #d97706 100%)',
+                      transition: 'width 0.5s ease'
+                    }} />
                   </Box>
-                  <Typography sx={{ fontSize: '13px', fontWeight: 600, color: deptCompletion > 70 ? '#16a34a' : '#d97706' }}>{deptCompletion}%</Typography>
+                  <Typography sx={{ 
+                    fontSize: '14px', 
+                    fontWeight: 700, 
+                    color: deptCompletion > 70 ? '#16a34a' : '#d97706',
+                    minWidth: '45px',
+                    textAlign: 'right'
+                  }}>
+                    {deptCompletion}%
+                  </Typography>
                 </Box>
               </CardContent>
             </Card>

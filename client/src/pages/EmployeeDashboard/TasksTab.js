@@ -1,7 +1,11 @@
 import { ClipboardList, Sparkles } from 'lucide-react';
 import PersonalEmployeeTable from '../../components/PersonalEmployeeTable/index';
+import { useAuth } from '../../context/AuthContext';
 
 const TasksTab = () => {
+  const { user } = useAuth();
+  const userName = user?.name || 'User';
+
   return (
     <div className="modern-tab-content">
       {/* Modern Header */}
@@ -11,7 +15,7 @@ const TasksTab = () => {
             <ClipboardList size={24} />
           </div>
           <div className="header-text">
-            <h1>My Personal Dashboard</h1>
+            <h1>{userName} Dashboard</h1>
             <p>Manage your tasks and track your progress</p>
           </div>
         </div>

@@ -175,7 +175,8 @@ router.get('/me', auth, async (req, res) => {
         startDate: task.startDate,
         endDate: task.endDate,
         remark: task.remark,
-        status: task.status
+        status: task.status,
+        notes: task.notes || [] // Include notes in the response
       })) || []
     });
   } catch (error) {

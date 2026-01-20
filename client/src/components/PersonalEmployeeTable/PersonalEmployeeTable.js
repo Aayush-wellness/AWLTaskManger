@@ -323,7 +323,7 @@ const PersonalEmployeeTable = () => {
     muiTableBodyRowProps: ({ row }) => ({
       onClick: (event) => {
         // Don't toggle if clicking on buttons, links, or interactive elements
-        if (event.target.closest('button, a, input, .MuiIconButton-root, .MuiCheckbox-root')) {
+        if (event.target.closest('button, a, input, select, .MuiIconButton-root, .MuiCheckbox-root')) {
           return;
         }
         row.toggleExpanded();
