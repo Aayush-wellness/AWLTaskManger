@@ -360,11 +360,6 @@ const PersonalEmployeeTable = () => {
         </button>
       </div>
     ),
-    state: {
-      expanded: expandedRows, // Use managed expanded state to keep rows always expanded
-      isLoading: isLoading,
-      showAlertBanner: !!error,
-    },
   });
 
   return (
