@@ -438,7 +438,33 @@ const PersonalTaskPanel = ({ row, onRefresh }) => {
         accessorKey: 'status',
         header: 'Status',
         size: 100,
-        Cell: ({ cell }) => cell.getValue() ? cell.getValue() : 'Pending',
+        Cell: ({ cell }) => {
+          const status = cell.getValue() || 'pending';
+          const statusConfig = {
+            'pending': { bg: '#fef3c7', color: '#92400e', label: 'Pending', icon: '⏳' },
+            'in-progress': { bg: '#dbeafe', color: '#1e40af', label: 'In Progress', icon: '🔄' },
+            'completed': { bg: '#dcfce7', color: '#166534', label: 'Completed', icon: '✅' },
+            'blocked': { bg: '#fee2e2', color: '#991b1b', label: 'Blocked', icon: '🚫' }
+          };
+          const config = statusConfig[status.toLowerCase()] || { bg: '#f3f4f6', color: '#6b7280', label: status, icon: '❓' };
+          return (
+            <span style={{
+              backgroundColor: config.bg,
+              color: config.color,
+              padding: '4px 12px',
+              borderRadius: '6px',
+              fontSize: '13px',
+              fontWeight: 600,
+              textTransform: 'capitalize',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}>
+              <span>{config.icon}</span>
+              {config.label}
+            </span>
+          );
+        },
       },
       {
         id: 'notes',
@@ -596,14 +622,14 @@ const PersonalTaskPanel = ({ row, onRefresh }) => {
         header: 'Status',
         size: 120,
         Cell: ({ cell }) => {
-          const status = cell.getValue();
+          const status = cell.getValue() || 'pending';
           const statusConfig = {
-            'pending': { bg: '#fef3c7', color: '#92400e', label: 'Pending' },
-            'in-progress': { bg: '#dbeafe', color: '#1e40af', label: 'In Progress' },
-            'completed': { bg: '#dcfce7', color: '#166534', label: 'Completed' },
-            'blocked': { bg: '#fee2e2', color: '#991b1b', label: 'Blocked' }
+            'pending': { bg: '#fef3c7', color: '#92400e', label: 'Pending', icon: '⏳' },
+            'in-progress': { bg: '#dbeafe', color: '#1e40af', label: 'In Progress', icon: '🔄' },
+            'completed': { bg: '#dcfce7', color: '#166534', label: 'Completed', icon: '✅' },
+            'blocked': { bg: '#fee2e2', color: '#991b1b', label: 'Blocked', icon: '🚫' }
           };
-          const config = statusConfig[status] || { bg: '#f3f4f6', color: '#6b7280', label: status };
+          const config = statusConfig[status.toLowerCase()] || { bg: '#f3f4f6', color: '#6b7280', label: status, icon: '❓' };
           return (
             <span style={{
               backgroundColor: config.bg,
@@ -611,8 +637,12 @@ const PersonalTaskPanel = ({ row, onRefresh }) => {
               padding: '4px 12px',
               borderRadius: '6px',
               fontSize: '13px',
-              fontWeight: 600
+              fontWeight: 600,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px'
             }}>
+              <span>{config.icon}</span>
               {config.label}
             </span>
           );

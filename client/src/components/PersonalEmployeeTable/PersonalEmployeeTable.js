@@ -35,6 +35,7 @@ const PersonalEmployeeTable = () => {
   const [personalData, setPersonalData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [expandedRows, setExpandedRows] = useState({}); // State to manage expanded rows
 
   // Refetch projects when add task modal opens
   const handleAddTask = useCallback(() => {
@@ -78,6 +79,13 @@ const PersonalEmployeeTable = () => {
       }];
 
       setPersonalData(transformedData);
+      
+      // Ensure all rows are expanded and stay expanded
+      const expandedState = {};
+      transformedData.forEach(row => {
+        expandedState[row.id] = true;
+      });
+      setExpandedRows(expandedState);
     } catch (error) {
       console.error('Error fetching personal data:', error);
       setError('Failed to load your personal data');
@@ -294,13 +302,19 @@ const PersonalEmployeeTable = () => {
     enableRowActions: false,
     enableRowSelection: false,
     enableEditing: false,
-    // enableExpanding: true,
+    enableExpanding: true, // Enable expanding functionality
     getRowId: (row) => row.id,
     initialState: {
       showColumnFilters: false,
       showGlobalFilter: false,
       expanded: true, // Expand all rows by default
     },
+    state: {
+      expanded: expandedRows, // Use managed expanded state
+      isLoading: isLoading,
+      showAlertBanner: !!error,
+    },
+    onExpandingChange: () => {}, // Prevent any expansion state changes - keeps rows always expanded
     paginationDisplayMode: 'pages',
     positionToolbarAlertBanner: 'bottom',
     muiToolbarAlertBannerProps: error
@@ -319,17 +333,10 @@ const PersonalEmployeeTable = () => {
         margin: 0,
       }
     },
-    // Make entire row clickable to expand/collapse
+    // Remove click handler to prevent collapse - panel stays always expanded
     muiTableBodyRowProps: ({ row }) => ({
-      onClick: (event) => {
-        // Don't toggle if clicking on buttons, links, or interactive elements
-        if (event.target.closest('button, a, input, select, .MuiIconButton-root, .MuiCheckbox-root')) {
-          return;
-        }
-        row.toggleExpanded();
-      },
       sx: {
-        cursor: 'pointer',
+        cursor: 'default', // Change cursor to default since clicking won't do anything
         '&:hover': {
           backgroundColor: 'rgba(91, 124, 250, 0.04)',
         },
@@ -354,6 +361,7 @@ const PersonalEmployeeTable = () => {
       </div>
     ),
     state: {
+      expanded: expandedRows, // Use managed expanded state to keep rows always expanded
       isLoading: isLoading,
       showAlertBanner: !!error,
     },
