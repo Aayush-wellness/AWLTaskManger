@@ -100,6 +100,10 @@ app.post('/api/setup/admin', async (req, res) => {
   }
 });
 
+// Initialize report scheduler
+const ReportScheduler = require('./jobs/reportScheduler');
+ReportScheduler.initializeSchedules();
+
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/departments', require('./routes/departments'));
@@ -108,6 +112,8 @@ app.use('/api/tasks', require('./routes/tasks'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/project-vendors', require('./routes/projectVendors'));
 app.use('/api/notifications' , require('./routes/notificationRoutes'));
+app.use('/api/mis', require('./routes/mis'));
+app.use('/api/reports', require('./routes/reports'));
 
 // Error handling middleware 
 app.use((err, req, res, next) => {

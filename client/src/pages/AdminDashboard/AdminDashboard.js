@@ -1,13 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, LayoutDashboard, ListTodo, FolderPlus, BarChart3, Search } from 'lucide-react';
+import { LogOut, LayoutDashboard, ListTodo, FolderPlus, BarChart3, Search, FileText } from 'lucide-react';
 import axios from '../../config/axios';
 import NotificationBell from '../../components/NotificationBell';
 import DashboardTab from './DashboardTab';
 import TasksTab from './TasksTab';
 import ProjectsTab from './ProjectsTab';
 import ProjectDashboard from './ProjectDashboard';
+import AdminMisTab from '../../components/AdminMisTab';
 import EmployeeListModal from './EmployeeListModal';
 import '../../styles/Dashboard.css';
 
@@ -85,6 +86,7 @@ const AdminDashboard = () => {
     { id: 'tasks', label: 'All Tasks', icon: ListTodo },
     { id: 'projects', label: 'Bulk Task', icon: FolderPlus },
     { id: 'projects-dashboard', label: 'Project Dashboard', icon: BarChart3 },
+    { id: 'mis', label: 'Employee MIS', icon: FileText },
   ];
 
   return (
@@ -175,6 +177,10 @@ const AdminDashboard = () => {
 
           {activeTab === 'projects-dashboard' && (
             <ProjectDashboard projects={projects} employees={employees} onProjectsRefresh={fetchData} />
+          )}
+
+          {activeTab === 'mis' && (
+            <AdminMisTab employees={employees} onRefresh={fetchData} />
           )}
         </div>
       </div>
