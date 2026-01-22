@@ -9,6 +9,7 @@ import ProfileSettings from '../../components/ProfileSettings';
 import TasksTab from './TasksTab';
 import ProjectsTab from './ProjectsTab';
 import EmployeesTab from './EmployeesTab';
+import MisTab from '../../components/MisTab';
 import '../../styles/EmployeeDashboard-Light.css';
 
 const EmployeeDashboard = () => {
@@ -64,6 +65,7 @@ const EmployeeDashboard = () => {
     { id: 'tasks', label: 'My Tasks', icon: <ClipboardList size={18} /> },
     { id: 'projects', label: 'Projects', icon: <FolderKanban size={18} /> },
     { id: 'employees', label: 'Employees', icon: <Users size={18} /> },
+    {id: 'mis' , label:'MIS', icon:<Users size={18}/>}
   ];
 
   return (
@@ -146,6 +148,7 @@ const EmployeeDashboard = () => {
         {activeTab === 'tasks' && <TasksTab />}
         {activeTab === 'projects' && <ProjectsTab projects={projects} onRefresh={fetchProjects} />}
         {activeTab === 'employees' && <EmployeesTab />}
+        {activeTab === "mis" && <MisTab/>}
       </div>
 
       {/* Profile Settings Modal */}

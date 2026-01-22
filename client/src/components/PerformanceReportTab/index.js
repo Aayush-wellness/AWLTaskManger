@@ -1,0 +1,3 @@
+import PerformanceReportTabContainer from './PerformanceReportTabContainer'
+
+export default PerformanceReportTabContainer
