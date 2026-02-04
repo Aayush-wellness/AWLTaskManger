@@ -6,6 +6,52 @@ const AddTaskModal = ({
   onCancel,
   projects = []
 }) => {
+  // Calculate max end date (10 days from start date)
+  const getMaxEndDate = () => {
+    if (!formData.startDate) return '';
+    
+    const startDate = new Date(formData.startDate);
+    const maxEndDate = new Date(startDate);
+    maxEndDate.setDate(startDate.getDate() + 10);
+    
+    return maxEndDate.toISOString().split('T')[0];
+  };
+
+  // Handle start date change and validate end date
+  const handleStartDateChange = (value) => {
+    onFormChange('startDate', value);
+    
+    // If end date is set and exceeds 10 days from new start date, clear it
+    if (formData.endDate && value) {
+      const startDate = new Date(value);
+      const endDate = new Date(formData.endDate);
+      const daysDiff = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+      
+      if (daysDiff > 10) {
+        onFormChange('endDate', '');
+      }
+    }
+  };
+
+  // Handle form submission with validation
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    // Validate 10-day limit
+    if (formData.startDate && formData.endDate) {
+      const startDate = new Date(formData.startDate);
+      const endDate = new Date(formData.endDate);
+      const daysDiff = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+      
+      if (daysDiff > 10) {
+        alert('End date cannot be more than 10 days from start date');
+        return;
+      }
+    }
+    
+    onSave();
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -42,7 +88,7 @@ const AddTaskModal = ({
       >
         <h2>Add New Task</h2>
 
-        <form onSubmit={(e) => { e.preventDefault(); onSave(); }}>
+        <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: '16px' }}>
             <label>Task Name *</label>
             <input
@@ -81,25 +127,32 @@ const AddTaskModal = ({
             <small style={{ color: '#666', marginTop: '4px', display: 'block' }}>Auto-filled with your name</small>
           </div>
           <div style={{ marginBottom: '16px' }}>
-
-            <label>Start Date</label>
+            <label>Start Date *</label>
             <input
               type="date"
               value={formData.startDate}
-              onChange={(e) => onFormChange('startDate', e.target.value)}
+              onChange={(e) => handleStartDateChange(e.target.value)}
+              required
               style={{ width: '100%', padding: '8px', border: '1px solid #ccc', marginTop: '4px' }}
             />
           </div>
           <div style={{ marginBottom: '16px' }}>
-            <label>End Date</label>
+            <label>End Date *</label>
             <input
               type="date"
               value={formData.endDate}
               onChange={(e) => onFormChange('endDate', e.target.value)}
+              required
               min={formData.startDate}
+              max={getMaxEndDate()}
               disabled={!formData.startDate}
               style={{ width: '100%', padding: '8px', border: '1px solid #ccc', marginTop: '4px' }}
             />
+            {formData.startDate && (
+              <small style={{ color: '#666', marginTop: '4px', display: 'block' }}>
+                Maximum 10 days from start date (until {new Date(getMaxEndDate()).toLocaleDateString()})
+              </small>
+            )}
           </div>
           <div style={{ marginBottom: '20px' }}>
             <label>Remark</label>

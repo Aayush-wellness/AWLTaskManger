@@ -12,7 +12,19 @@ const AddTaskModal = ({
     const handleSaveNewTask = useCallback(() => {
         // Basic validation
         if (!formData.taskName?.trim() || !formData.project?.trim()) {
-            toast.warning('Please fill in required fields (Task and Project)');
+            toast.warning('Please fill in required fields (Task, Project, Start Date, and End Date)');
+            return;
+        }
+
+        // Date validation
+        if (!formData.startDate || !formData.endDate) {
+            toast.warning('Please select both Start Date and End Date');
+            return;
+        }
+
+        // Validate that end date is not before start date
+        if (new Date(formData.endDate) < new Date(formData.startDate)) {
+            toast.warning('End Date cannot be before Start Date');
             return;
         }
 
@@ -93,22 +105,24 @@ const AddTaskModal = ({
                         <small style={{ color: '#666', marginTop: '4px', display: 'block' }}>Auto-filled with your name</small>
                     </div>
                     <div style={{ marginBottom: '16px' }}>
-                        <label>Start Date</label>
+                        <label>Start Date *</label>
                         <input
                             type="date"
                             value={formData.startDate}
                             onChange={(e) => onInputChange('startDate', e.target.value)}
+                            required
                             style={{ width: '100%', padding: '8px', border: '1px solid #ccc', marginTop: '4px' }}
                         />
                     </div>
                     <div style={{ marginBottom: '16px' }}>
-                        <label>End Date</label>
+                        <label>End Date *</label>
                         <input
                             type="date"
                             value={formData.endDate}
                             onChange={(e) => onInputChange('endDate', e.target.value)}
                             min={formData.startDate}
                             disabled={!formData.startDate}
+                            required
                             style={{ width: '100%', padding: '8px', border: '1px solid #ccc', marginTop: '4px' }}
                         />
                     </div>

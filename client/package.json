@@ -2,7 +2,7 @@
   "name": "client",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://localhost:5004",
+  "proxy": "http://localhost:5006",
   "dependencies": {
     "@craco/craco": "^7.1.0",
     "@mui/x-data-grid": "^8.23.0",

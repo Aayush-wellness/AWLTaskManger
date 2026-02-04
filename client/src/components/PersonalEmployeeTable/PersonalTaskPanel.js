@@ -312,12 +312,22 @@ const PersonalTaskPanel = ({ row, onRefresh }) => {
 
   // Delete task
   const handleDeleteTask = useCallback(async (taskId) => {
+    console.log('Attempting to delete task with ID:', taskId);
+    console.log('Task ID type:', typeof taskId);
+    
+    if (!taskId) {
+      toast.error('Error: Task ID is missing');
+      return;
+    }
+    
     if (window.confirm('Are you sure you want to delete this task?')) {
       try {
+        console.log('Making delete request to:', `/api/users/delete-task/${taskId}`);
         await axios.delete(`/api/users/delete-task/${taskId}`);
         if (onRefresh) await onRefresh();
         toast.success('Task deleted successfully!');
       } catch (error) {
+        console.error('Delete task error:', error);
         toast.error('Failed to delete task: ' + (error.response?.data?.message || error.message));
       }
     }
@@ -366,6 +376,12 @@ const PersonalTaskPanel = ({ row, onRefresh }) => {
   // Filter tasks based on status and assignedBy
   const filteredTasks = useMemo(() => {
     let tasks = localTasks || [];
+    
+    // Debug: Log task structure
+    if (tasks.length > 0) {
+      console.log('Sample task structure:', tasks[0]);
+      console.log('Task IDs:', tasks.map(t => ({ id: t.id, _id: t._id, taskName: t.taskName })));
+    }
     
     // Filter by status
     if (statusFilter !== 'all') {
@@ -518,7 +534,12 @@ const PersonalTaskPanel = ({ row, onRefresh }) => {
             </Tooltip>
             <Tooltip title="Delete">
               <IconButton
-                onClick={() => handleDeleteTask(taskRow.original.id)}
+                onClick={() => {
+                  const taskId = taskRow.original.id || taskRow.original._id;
+                  console.log('Delete button clicked for task:', taskRow.original);
+                  console.log('Using task ID:', taskId);
+                  handleDeleteTask(taskId);
+                }}
                 size="small"
                 sx={{
                   color: '#ef4444',
