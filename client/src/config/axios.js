@@ -1,10 +1,10 @@
 import axios from 'axios';
 
 // Configure axios defaults
-// In development, let the proxy handle routing to the backend
-// In production, use the API URL or current origin
+// In development, use localhost backend
+// In production, use the specific backend URL
 const baseURL = process.env.NODE_ENV === 'production' 
-  ? process.env.REACT_APP_API_URL || window.location.origin
+  ? process.env.REACT_APP_API_URL || 'https://awltaskmanger.onrender.com'
   : 'http://localhost:5002'; // Keep your local development port
 
 if (baseURL) {
